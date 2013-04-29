@@ -1,2 +1,2 @@
-CS544_Group1
+PMSP - Personal Media Streaming Protocol
 ============
