@@ -34,12 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAudio">
-      <HintPath>NAudio-Release\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.WindowsMediaFormat">
-      <HintPath>NAudio-Release\NAudio.WindowsMediaFormat.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
