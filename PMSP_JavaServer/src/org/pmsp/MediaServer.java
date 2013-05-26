@@ -29,7 +29,9 @@ public class MediaServer {
 		finally {
 			fis.close();	
 		}
-
+		if (props == null) {
+			System.err.println("Error loading properties file, shutting down..");
+		}
 		
 		
 		Container container = (Container) Class.forName(props.getProperty(IMPLEMENTATION)).newInstance();
