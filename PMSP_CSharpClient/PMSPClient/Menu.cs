@@ -12,7 +12,7 @@ namespace PMSPClient
     class Menu
     {
         //Private fields.
-        private string _prompt = "Would you like to browse artists or tracks?  Please enter (a) for artists, (t) for tracks, or ESC to exit the program:";
+        private string _prompt;
         private ConsoleKey _selectedOption;
         private string _invalidOptionMessage = "\nThe option you have specified is invalid.";
         private List<ConsoleKey> _validOptions = new List<ConsoleKey>();
@@ -24,8 +24,11 @@ namespace PMSPClient
         /// This is the main constructor.
         /// </summary>
         /// <param name="ValidOptions">List of valid options.</param>
-        public Menu(List<ConsoleKey> validOptions)
+        public Menu(string prompt, List<ConsoleKey> validOptions)
         {
+            //Set prompt field.
+            _prompt = prompt;
+
             //Set valid options field.
             _validOptions = validOptions;
 

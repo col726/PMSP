@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml;
 
@@ -12,11 +14,19 @@ namespace PMSPClient
     class Protocol
     {
         //Private fields.
+        private string _ip;
+        private string _url;
+        private const string _port = "31415";
         private bool _isConnected = false;
         private bool _isAuthenticated = false;
         private Exception _exception;
 
         //Public properties.
+        //Set url when ip is set.
+        public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
+        public string Url { get { return _url; } }
+        public string Port { get { return _port; } }
+        public bool IsConnected { get { return _isConnected; } }
         public Exception Exception { get { return _exception; } }
 
         /// <summary>
@@ -29,18 +39,53 @@ namespace PMSPClient
         /// </summary>
         public bool Connect()
         {
-            //Inform user of connection process.
-            Console.WriteLine("Connecting to server, please wait...");
+            //Instantiate http request.
 
-            /*
-             Connect to server here.
-             *
-            */
+            /**********TEST DATA ONLY******************/
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://66.175.208.217:31415/");
+            /**********TEST DATA ONLY******************/
 
-            //Success
-            _isConnected = true;
-            Console.WriteLine("Connected successfully." + Environment.NewLine);
-            return true;
+            //Use this when we go live.
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_url);
+
+            //Construct post data.
+            ASCIIEncoding encoding = new ASCIIEncoding();
+            string postData = "hello=hello";
+            byte[] data = encoding.GetBytes(postData);
+
+            //Specify request parameters.
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = data.Length;
+
+            //Get http request stream.
+            try
+            {
+                using (Stream stream = request.GetRequestStream())
+                {
+                    stream.Write(data, 0, data.Length);
+                }
+
+                //Get http response.
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                //Read response into variable.
+                string responseContent = new StreamReader(response.GetResponseStream()).ReadToEnd();
+
+                //If response contains hello message, we're connected.
+                if (responseContent.Contains("Hello"))
+                {
+                    _isConnected = true;
+                }
+
+                //Return connection status.
+                return _isConnected;
+            }
+            catch (Exception exception)
+            {
+                //Return connection status.
+                return _isConnected;
+            }
         }
 
         /// <summary>
