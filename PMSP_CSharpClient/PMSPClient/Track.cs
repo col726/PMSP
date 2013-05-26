@@ -51,8 +51,8 @@ namespace PMSPClient
             }
 
             /**********TEST DATA ONLY******************/
-            tracks.Add(new Track("Intolerance", new Artist("Tool", ""), @"C:\PMSPClient\PMSPClient\Tracks\Intolerance.mp3"));
-            tracks.Add(new Track("Lateralus", new Artist("Tool", ""), @"C:\PMSPClient\PMSPClient\Tracks\Lateralus.mp3"));
+            tracks.Add(new Track("Intolerance", new Artist("Tool", ""), @"C:\Users\Owner\Music\Tool\Undertow\01 Intolerance.mp3"));
+            tracks.Add(new Track("Lateralus", new Artist("Tool", ""), @"C:\Users\Owner\Music\Tool\Lateralus\09 Lateralus.mp3"));
             /******************************************/
 
             //Return list.
