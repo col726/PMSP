@@ -12,21 +12,17 @@ namespace PMSPClient
     class Artist
     {
         //Private fields.
-        string _firstNameOrBandName;
-        string _lastName;
+        string _name;
         List<Track> _tracks;
 
         //Public properties.
-        public string FirstName { get { return _firstNameOrBandName; } }
-        public string LastName { get { return _lastName; } }
-        public string DisplayName { get { return (_firstNameOrBandName + " " + _lastName).Trim(); } }
+        public string Name { get { return _name; } }
         public List<Track> Tracks { get { return _tracks; } set { _tracks = value; } }
 
         //Main constructor.
-        public Artist(string firstNameOrBandName, string lastName)
+        public Artist(string name)
         {
-            _firstNameOrBandName = firstNameOrBandName;
-            _lastName = lastName;
+            _name = name;
         }
 
         //Get list of artists.
@@ -44,8 +40,7 @@ namespace PMSPClient
             }
 
             /**********TEST DATA ONLY******************/
-            artists.Add(new Artist("Rob", "Zombie"));
-            artists.Add(new Artist("Tool", ""));
+            artists.Add(new Artist("The Milk Carton Kids"));
             /******************************************/
 
             //Return list.

@@ -42,14 +42,14 @@ namespace PMSPClient
             //Display welcome message.
             Console.WriteLine("Welcome to the PMSP Streaming Audio Player v1.0!");
 
-            //Write new lines.
+            //Write new line.
             Utilities.WriteNewLine();
 
             //Instantiate Menu object with valid options.
             var menu = new Menu("Would you like us to search for a PMSP server on the local area network for you?  Enter (y) for yes, (n) for no, or ESC to exit the program:",
                                 new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
 
-            //Write new lines.
+            //Write new line.
             Utilities.WriteNewLine();
 
             //Instantiate Protocol.
@@ -69,7 +69,7 @@ namespace PMSPClient
                                           protocol.Port,
                                           ".  Please wait..."));
 
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Get list of active IPv4 addresses on LAN.
@@ -109,7 +109,7 @@ namespace PMSPClient
                         //Set PMSP URL.
                         protocol.Url = Console.ReadLine().Trim();
 
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Attempt handshake
@@ -126,6 +126,7 @@ namespace PMSPClient
 
                     //Exit program.
                     case "Escape":
+                        CleanUp();
                         Environment.Exit(0);
                         break;
                 }
@@ -133,26 +134,26 @@ namespace PMSPClient
                 //If we're connected, proceed.
                 if (protocol.IsConnected)
                 {
-                    //Write new lines.
+                    //Write new line.
                     Utilities.WriteNewLine();
 
                     //Authenticate.
                     if (protocol.Authenticate())
                     {
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Inform user of successful authentication.
                         Console.WriteLine("Congratulations!  You have successfully logged in to PMSP Server " + protocol.Url + ".");
 
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Instantiate Menu object with valid options.
                         menu = new Menu("Would you like to browse artists or tracks?  Please enter (a) for artists, (t) for tracks, or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.A, ConsoleKey.T, ConsoleKey.Escape });
 
-                        //Write new lines.
-                        Console.WriteLine(Environment.NewLine + Environment.NewLine);
+                        //Write new line.
+                        Utilities.WriteNewLine();
 
                         //Run the program.
                         while (1 == 1)
@@ -167,20 +168,26 @@ namespace PMSPClient
                                 //List artists.
                                 case "A":
 
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
                                     //Get artists.
                                     artists = Artist.GetList(protocol);
 
                                     //List artists.
-                                    Console.WriteLine(Environment.NewLine + "Here are the available artists:");
+                                    Console.WriteLine("Here are the available artists:");
                                     int artistCount = 1;
                                     foreach (Artist artist in artists)
                                     {
-                                        Console.WriteLine(artistCount.ToString() + "." + "  " + artist.DisplayName);
+                                        Console.WriteLine(artistCount.ToString() + "." + "  " + artist.Name);
                                         artistCount++;
                                     }
 
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
                                     //Get selected artist.
-                                    Console.WriteLine(Environment.NewLine + "Please enter the number of the artist of whom you'd like to listen:");
+                                    Console.WriteLine("Please enter the number of the artist of whom you'd like to listen:");
                                     try
                                     {
                                         //Get artist from list.
@@ -189,11 +196,14 @@ namespace PMSPClient
                                         //Ensure selection is valid before proceeding.
                                         if (artist != null)
                                         {
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
                                             //Get tracks.
                                             artist.Tracks = Track.GetList(protocol, artist);
 
                                             //List tracks.
-                                            Console.WriteLine(Environment.NewLine + "Here are the available tracks for " + artist.DisplayName + ":");
+                                            Console.WriteLine("Here are the available tracks for " + artist.Name + ":");
                                             int trackCount = 1;
                                             foreach (Track track in artist.Tracks)
                                             {
@@ -201,8 +211,11 @@ namespace PMSPClient
                                                 trackCount++;
                                             }
 
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
                                             //Get selected track.
-                                            Console.WriteLine(Environment.NewLine + "Please enter the number of the track of which you'd like to listen:");
+                                            Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
                                             try
                                             {
                                                 //Get track from list.
@@ -211,8 +224,41 @@ namespace PMSPClient
                                                 //Ensure selection is valid before proceeding.
                                                 if (track != null)
                                                 {
+                                                    //Inform user of title and artist.
+                                                    Console.WriteLine("Now streaming " + track.Title + " by " + track.Artist.Name + "...");
+
                                                     //Stream track
                                                     track.Stream(protocol);
+
+                                                    //Write new line.
+                                                    Utilities.WriteNewLine();
+
+                                                    //Instantiate Menu object with valid options.
+                                                    Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
+
+                                                    //Run.
+                                                    while (1 == 1)
+                                                    {
+                                                        //Perform specified action.
+                                                        switch (playbackMenu.SelectedOption.ToString())
+                                                        {
+                                                            //Stop track
+                                                            case "S":
+
+                                                                //Stop track
+                                                                track.Stop();
+                                                                break;
+
+                                                            //Exit program.
+                                                            case "Escape":
+                                                                CleanUp();
+                                                                Environment.Exit(0);
+                                                                break;
+                                                        }
+
+                                                        break;
+                                                    }
+
                                                 }
                                                 else
                                                 {
@@ -248,9 +294,13 @@ namespace PMSPClient
 
                                 //Exit program.
                                 case "Escape":
+                                    CleanUp();
                                     Environment.Exit(0);
                                     break;
                             }
+
+                            //Write new line.
+                            Utilities.WriteNewLine();
 
                             //set next selected option
                             menu.SetSelectedOption();
@@ -260,13 +310,13 @@ namespace PMSPClient
                     //Invalid login.
                     else
                     {
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Inform user of failed login attempt.
-                        Console.WriteLine("Unfortunately, we were unable to authenticate you as a valid user on PMSP Server " + protocol.Url);
+                        Console.WriteLine("Unfortunately, we were unable to authenticate you as a valid user on PMSP Server " + protocol.Url + ".");
 
-                        //Write new lines.
+                        //Write new line.
                         Utilities.WriteNewLine();
 
                         //Prompt user for next action.
@@ -277,15 +327,26 @@ namespace PMSPClient
                 //If we're not connected, prompt user for next action.
                 else
                 {
-                    //Write new lines.
+                    //Write new line.
                     Utilities.WriteNewLine();
 
                     //Prompt user for next action.
                     menu.SetSelectedOption();
                 }
 
-                //Write new lines.
+                //Write new line.
                 Utilities.WriteNewLine();
+            }
+        }
+
+        /// <summary>
+        /// Delete temp files.
+        /// </summary>
+        private static void CleanUp()
+        {
+            foreach (string file in Directory.GetFiles(Environment.CurrentDirectory, "*.mp3"))
+            {
+                File.Delete(file);
             }
         }
     }
