@@ -1,0 +1,19 @@
+<Operation>
+  <type class="ListRequest">
+    <category>Music</category>
+    <listType>Track</listType>
+    <criteria>
+      <ListCriteria>
+        <type>Music</type>
+        <name>Artist</name>
+        <value>Smith</value>
+      </ListCriteria>
+      <ListCriteria>
+        <type>Music</type>
+        <name>Artist</name>
+        <value>Green</value>
+      </ListCriteria>
+    </criteria>
+  </type>
+</Operation>
+
