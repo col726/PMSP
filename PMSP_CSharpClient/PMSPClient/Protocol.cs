@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*=======================Directives and Pragmas=============================*/
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,15 +20,13 @@ namespace PMSPClient
         private const string _port = "31415";
         private bool _isConnected = false;
         private bool _isAuthenticated = false;
-        private Exception _exception;
 
         //Public properties.
         //Set url when ip is set.
         public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
-        public string Url { get { return _url; } }
+        public string Url { get { return _url; } set { _url = value; } }
         public string Port { get { return _port; } }
         public bool IsConnected { get { return _isConnected; } }
-        public Exception Exception { get { return _exception; } }
 
         /// <summary>
         /// Main constructor.
@@ -39,28 +38,29 @@ namespace PMSPClient
         /// </summary>
         public bool Connect()
         {
-            //Instantiate http request.
-
-            /**********TEST DATA ONLY******************/
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://66.175.208.217:31415/");
-            /**********TEST DATA ONLY******************/
-
-            //Use this when we go live.
-            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_url);
-
-            //Construct post data.
-            ASCIIEncoding encoding = new ASCIIEncoding();
-            string postData = "hello=hello";
-            byte[] data = encoding.GetBytes(postData);
-
-            //Specify request parameters.
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.ContentLength = data.Length;
-
-            //Get http request stream.
+            //Wrap handshake in try/catch to trap errors.
             try
             {
+                //Instantiate http request.
+
+                /**********TEST DATA ONLY******************/
+                //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://66.175.208.217:31415/");
+                /**********TEST DATA ONLY******************/
+
+                //Use this when we go live.
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_url);
+
+                //Construct post data.
+                ASCIIEncoding encoding = new ASCIIEncoding();
+                string postData = "hello=hello";
+                byte[] data = encoding.GetBytes(postData);
+
+                //Specify request parameters.
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = data.Length;
+
+                //Get http request stream.
                 using (Stream stream = request.GetRequestStream())
                 {
                     stream.Write(data, 0, data.Length);
@@ -77,15 +77,11 @@ namespace PMSPClient
                 {
                     _isConnected = true;
                 }
+            }
+            catch {}
 
-                //Return connection status.
-                return _isConnected;
-            }
-            catch (Exception exception)
-            {
-                //Return connection status.
-                return _isConnected;
-            }
+            //Return connection status.
+            return _isConnected;
         }
 
         /// <summary>
@@ -113,13 +109,14 @@ namespace PMSPClient
             //Inform user of authentication process.
             Console.WriteLine(Environment.NewLine + "Authenticating, please wait...");
 
-            /*
-             Authenticate here.
-            */
+            //Authenticate
+            if (userName.ToUpper() == "ADAM" && password == "himes")
+            {
+                _isAuthenticated = true;
+            }
 
-            _isAuthenticated = true;
-            Console.WriteLine("Authenticated successfully." + Environment.NewLine);
-            return true;
+            //Return authentication status.
+            return _isAuthenticated;
         }
 
         /// <summary>

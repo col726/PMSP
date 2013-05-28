@@ -7,6 +7,9 @@ using System.Xml;
 using System.IO;
 using System.Net;
 using NAudio.Wave;
+using System.Security.Cryptography;
+using TagLib;
+using System.Threading;
 
 namespace PMSPClient
 {
@@ -16,20 +19,40 @@ namespace PMSPClient
     class Track
     {
         //Private fields.
+        private byte[] _mp3;
+        private string _mp3TempFileName;
         private string _title;
         private Artist _artist;
-        private string _url;
+        private WaveOut _audio;
 
         //Public properties.
         public string Title { get { return _title; } }
-        public string Artist { get { return _title; } }
+        public Artist Artist { get { return _artist; } }
+        public WaveOut Audio { get { return _audio; } }
 
         //Main constructor.
-        public Track(string title, Artist artist, string url)
+        public Track(string mp3)
         {
-            _title = title;
-            _artist = artist;
-            _url = url;
+            //Set fields.
+            _mp3 = Convert.FromBase64String(mp3);
+
+            //Populate metadata.
+            PopulateMetadata();
+        }
+
+        public void PopulateMetadata()
+        {
+            //Write mp3 temp file.
+            _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
+            System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
+
+            //Get metadata from ID3 tags.
+            TagLib.File mp3 = TagLib.File.Create(_mp3TempFileName);
+            _artist = new Artist(mp3.Tag.Performers[0]);
+            _title = mp3.Tag.Title;
+
+            //Delete temp file.
+            System.IO.File.Delete(_mp3TempFileName);
         }
 
         /// <summary>
@@ -51,8 +74,7 @@ namespace PMSPClient
             }
 
             /**********TEST DATA ONLY******************/
-            tracks.Add(new Track("Intolerance", new Artist("Tool", ""), @"C:\Users\Owner\Music\Tool\Undertow\01 Intolerance.mp3"));
-            tracks.Add(new Track("Lateralus", new Artist("Tool", ""), @"C:\Users\Owner\Music\Tool\Lateralus\09 Lateralus.mp3"));
+            tracks.Add(new Track(System.IO.File.ReadAllText(@"C:\Users\Owner\Downloads\data.txt")));
             /******************************************/
 
             //Return list.
@@ -65,14 +87,25 @@ namespace PMSPClient
         /// <param name="protocol"></param>
         public void Stream(Protocol protocol)
         {
-            //Inform user of current streaming track.
-            Console.WriteLine("Now streaming " + this._title + " by " + this._artist.DisplayName + "..." + Environment.NewLine);
+            //Write mp3 temp file.
+            _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
+            System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
 
+            //Spin play off in a new thread so we can interact with it from the console (i.e. Pause/Stop/Resume).
+            Thread play = new Thread(Play);
+            play.Start();
+        }
+
+        /// <summary>
+        /// Plays track through NAudio library.
+        /// </summary>
+        public void Play()
+        {
             //Instantiate memory stream for track.
             using (Stream memoryStream = new MemoryStream())
             {
-                //Get stream from url.
-                using (Stream stream = WebRequest.Create(this._url).GetResponse().GetResponseStream())
+                //Read mp3 file into memory.
+                using (Stream stream = System.IO.File.OpenRead(_mp3TempFileName))
                 {
                     byte[] buffer = new byte[32768];
                     int read;
@@ -82,21 +115,29 @@ namespace PMSPClient
                     }
                 }
 
-                //Use NAudio library to stream track.
+                //Use NAudio library to play track.
                 memoryStream.Position = 0;
-                using (WaveStream blockAlignedStream = new BlockAlignReductionStream(WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(memoryStream))))
+                using (WaveStream waveStream = new BlockAlignReductionStream(WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(memoryStream))))
                 {
-                    using (WaveOut waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback()))
+                    using (_audio = new WaveOut(WaveCallbackInfo.FunctionCallback()))
                     {
-                        waveOut.Init(blockAlignedStream);
-                        waveOut.Play();
-                        while (waveOut.PlaybackState == PlaybackState.Playing)
+                        _audio.Init(waveStream);
+                        _audio.Play();
+                        while (_audio.PlaybackState == PlaybackState.Playing)
                         {
-                            System.Threading.Thread.Sleep(100);
+                            Thread.Sleep(100);
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Stops playback of a track in the play state.
+        /// </summary>
+        public void Stop()
+        {
+            _audio.Stop();
         }
     }
 }
