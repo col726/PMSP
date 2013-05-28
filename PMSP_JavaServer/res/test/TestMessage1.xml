@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PMSPMessage>
+    <PMSPHeader>
+        <version>1.0</version>
+        <state>DISCONNECTED</state>
+        <session_id>1234567890</session_id>
+        <messagetype>LOGINREQUEST</messagetype>
+    </PMSPHeader>
+    <PMSPBody>
+        <username>user</username>
+        <password>password</password>
+    </PMSPBody>
+</PMSPMessage>
