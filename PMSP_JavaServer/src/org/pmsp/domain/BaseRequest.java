@@ -1,10 +1,17 @@
 package org.pmsp.domain;
 
+
+
 public abstract class BaseRequest {
 
+	public enum MessageType {
+		LOGINREQUEST, LISTREQUEST, MEDIAREQUEST
+	}
+	
 	private Number version;
 	private String state;
 	private String session_id;
+	private MessageType messageType;
 	
 	public Number getVersion() {
 		return version;
