@@ -1,7 +1,7 @@
 package org.pmsp.domain;
 
 
-public class LoginRequest extends BaseRequest {
+public class LoginRequest extends Operation {
 
 	private String username;
 	private String password;

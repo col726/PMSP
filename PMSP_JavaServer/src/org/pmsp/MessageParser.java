@@ -1,18 +1,18 @@
 package org.pmsp;
 
-import org.pmsp.domain.BaseRequest;
+import org.pmsp.domain.Operation;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
 public class MessageParser {
 
-public BaseRequest parse(String xml) {
+public Operation parse(String xml) {
 	XStream xs = new XStream(new DomDriver());;
 	
-	BaseRequest br = null;
+	Operation br = null;
 	try {
-	br = (BaseRequest) xs.fromXML(xml);
+	br = (Operation) xs.fromXML(xml);
 	}
 	catch (Throwable t) {
 		t.printStackTrace();
