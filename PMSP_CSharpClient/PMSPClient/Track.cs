@@ -73,10 +73,6 @@ namespace PMSPClient
                  */
             }
 
-            /**********TEST DATA ONLY******************/
-            tracks.Add(new Track(System.IO.File.ReadAllText(@"C:\Users\Owner\Downloads\data.txt")));
-            /******************************************/
-
             //Return list.
             return tracks;
         }
