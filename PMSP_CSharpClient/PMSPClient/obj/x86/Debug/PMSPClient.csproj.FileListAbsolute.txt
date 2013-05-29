@@ -8,3 +8,4 @@ C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.dll
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\taglib-sharp.dll
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.config
+C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\PMSPClient.csprojResolveAssemblyReference.cache

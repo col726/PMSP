@@ -109,11 +109,125 @@ namespace PMSPClient
             //Inform user of authentication process.
             Console.WriteLine(Environment.NewLine + "Authenticating, please wait...");
 
-            //Authenticate
-            if (userName.ToUpper() == "ADAM" && password == "himes")
+            //Instantiate web request.
+            var request = (HttpWebRequest)WebRequest.Create(_url);
+
+            //Specify credentials and append to header.
+            string credentials = userName + ":" + password;
+            credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
+            request.Headers["Authorization"] = "Basic " + credentials;
+            
+            //Specify post data.
+            //Instantiate xml document.
+            var authenticationRequest = new XmlDocument();
+            
+            //Add the XML declaration section.
+            XmlDeclaration declaration = authenticationRequest.CreateXmlDeclaration("1.0", null, null);
+            declaration.Encoding = "UTF-8";
+
+            // Add the new node to the document.
+            XmlElement root = authenticationRequest.DocumentElement;
+            authenticationRequest.InsertBefore(declaration, root);
+            
+            //Define operation.
+            XmlElement operation = authenticationRequest.CreateElement("Operation");
+            authenticationRequest.AppendChild(operation);
+            
+            //Define type.
+            XmlElement type = authenticationRequest.CreateElement("type");
+            type.SetAttribute("class", "ListRequest");
+            operation.AppendChild(type);
+
+            //Define category.
+            XmlElement category = authenticationRequest.CreateElement("category");
+            XmlText categoryText = authenticationRequest.CreateTextNode("Music");
+            category.AppendChild(categoryText);
+            type.AppendChild(category);
+
+            //Define list type.
+            XmlElement listType = authenticationRequest.CreateElement("listType");
+            XmlText listTypeText = authenticationRequest.CreateTextNode("Track");
+            listType.AppendChild(listTypeText);
+            type.AppendChild(listType);
+
+            //Define criteria.
+            XmlElement criteria = authenticationRequest.CreateElement("criteria");
+            type.AppendChild(criteria);
+
+            //Define criteria 1st ListCriteria
+            XmlElement listCriteria = authenticationRequest.CreateElement("ListCriteria");
+            criteria.AppendChild(listCriteria);
+
+            //Define list criteria type.
+            XmlElement listCriteriaType = authenticationRequest.CreateElement("type");
+            XmlText listCriteriaTypeText = authenticationRequest.CreateTextNode("Music");
+            listCriteriaType.AppendChild(listCriteriaTypeText);
+            listCriteria.AppendChild(listCriteriaType);
+
+            //Define list criteria type.
+            XmlElement listCriteriaName = authenticationRequest.CreateElement("name");
+            XmlText listCriteriaNameText = authenticationRequest.CreateTextNode("Artist");
+            listCriteriaName.AppendChild(listCriteriaNameText);
+            listCriteria.AppendChild(listCriteriaName);
+
+            //Define list criteria type.
+            XmlElement listCriteriaValue = authenticationRequest.CreateElement("value");
+            XmlText listCriteriaValueText = authenticationRequest.CreateTextNode("Smith");
+            listCriteriaValue.AppendChild(listCriteriaValueText);
+            listCriteria.AppendChild(listCriteriaValue);
+
+            //Define criteria 2nd ListCriteria
+            listCriteria = authenticationRequest.CreateElement("ListCriteria");
+            criteria.AppendChild(listCriteria);
+
+            //Define list criteria type.
+            listCriteriaType = authenticationRequest.CreateElement("type");
+            listCriteriaTypeText = authenticationRequest.CreateTextNode("Music");
+            listCriteriaType.AppendChild(listCriteriaTypeText);
+            listCriteria.AppendChild(listCriteriaType);
+
+            //Define list criteria type.
+            listCriteriaName = authenticationRequest.CreateElement("name");
+            listCriteriaNameText = authenticationRequest.CreateTextNode("Artist");
+            listCriteriaName.AppendChild(listCriteriaNameText);
+            listCriteria.AppendChild(listCriteriaName);
+
+            //Define list criteria type.
+            listCriteriaValue = authenticationRequest.CreateElement("value");
+            listCriteriaValueText = authenticationRequest.CreateTextNode("Green");
+            listCriteriaValue.AppendChild(listCriteriaValueText);
+            listCriteria.AppendChild(listCriteriaValue);
+
+            //authenticationRequest.Save("test.xml");
+
+            //Convert xml to byte stream for http post.
+            string postData;
+            using (var stringWriter = new StringWriter())
+            using (var xmlTextWriter = XmlWriter.Create(stringWriter))
             {
-                _isAuthenticated = true;
+                authenticationRequest.WriteTo(xmlTextWriter);
+                xmlTextWriter.Flush();
+                postData = stringWriter.GetStringBuilder().ToString();
             }
+
+            byte[] data = Encoding.UTF8.GetBytes(postData);
+
+            //Specify request parameters.
+            request.Method = "POST";
+            request.ContentType = "application/xml";
+            request.Accept = "application/xml";
+
+            //Get http request stream.
+            using (Stream stream = request.GetRequestStream())
+            {
+                stream.Write(data, 0, data.Length);
+            }
+
+            //Get http response.
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            //Read response into variable.
+            string responseContent = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
             //Return authentication status.
             return _isAuthenticated;
