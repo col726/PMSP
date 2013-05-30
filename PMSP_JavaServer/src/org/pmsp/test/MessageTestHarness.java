@@ -3,7 +3,7 @@ package org.pmsp.test;
 import java.io.File;
 
 import org.pmsp.MessageParser;
-import org.pmsp.domain.BaseRequest;
+import org.pmsp.domain.Operation;
 
 public class MessageTestHarness {
 
@@ -16,7 +16,7 @@ public class MessageTestHarness {
 		File testXML1 = new File("xmlPath/testMessage1.xml");
 		
 		MessageParser testParser = new MessageParser();
-		BaseRequest testRequest = testParser.parseFile(testXML1);
+		Operation testRequest = testParser.parseFile(testXML1);
 		
 		System.out.println(testRequest.toString());
 	}

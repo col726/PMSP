@@ -16,7 +16,6 @@
         <folder path="/PMSP_JavaServer/lib"/>
         <file path="/PMSP_JavaServer/DUMMYFILE.txt"/>
         <javaElement handleIdentifier="=PMSP_JavaServer/src"/>
-        <file path="/PMSP_JavaServer/pmsp.properties"/>
         <file path="/PMSP_JavaServer/.classpath"/>
     </selectedElements>
 </jardesc>

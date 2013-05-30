@@ -3,7 +3,6 @@ package org.pmsp.test;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Scanner;
 
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
