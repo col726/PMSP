@@ -1,7 +1,11 @@
 package org.pmsp;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import org.pmsp.domain.AudioFile;
@@ -14,6 +18,7 @@ import org.simpleframework.http.Response;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import org.apache.commons.codec.binary.Base64;
 
 public class ResponseBuilder {
 
@@ -63,8 +68,8 @@ public class ResponseBuilder {
 		//TODO need to actually fetch the data that was asked for, generate the checksum, the Base64 encoded data, etc
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
 		AudioFile af = new AudioFile("Artist", "Album", "Title", "Genre", "ID");
-		af.setChecksum("12345");
-		af.setData("base64encodeddata");
+		af.setChecksum("12345");//getCheckSum
+		af.setData("base64encodeddata");//encodeBase64
 		mediaFiles.add(af);
 		af = new AudioFile("Artist2", "Album2", "Title2", "Genre2", "ID2");
 		af.setChecksum("98765");
@@ -74,5 +79,68 @@ public class ResponseBuilder {
 		body.println(xs.toXML(r));	
 
 		body.close();
+	}
+	
+	private byte[] createChecksum(String fileName) throws Exception
+	{
+		InputStream fis = new FileInputStream(fileName);
+		
+		byte[] buffer = new byte[1024];
+		
+		MessageDigest complete = MessageDigest.getInstance("MD5");
+	     int numRead;
+	     do {
+	      numRead = fis.read(buffer);
+	      if (numRead > 0) {
+	        complete.update(buffer, 0, numRead);
+	        }
+	      } while (numRead != -1);
+	     fis.close();
+	     return complete.digest();
+	}
+	
+	private String getChecksum(String filename) throws Exception {
+	     byte[] b = createChecksum(filename);
+	     String result = "";
+	     for (int i=0; i < b.length; i++) {
+	       result +=
+	          Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+	      }
+	     return result;
+	   }
+	
+	private String encodeBase64(String filename) throws Exception
+	{
+		File file = new File(filename);
+		byte[] bytes = loadFile(file);
+		byte[] encoded = Base64.encodeBase64(bytes);
+		String encodedString = new String(encoded);
+
+		return encodedString;
+	}
+	
+
+	private static byte[] loadFile(File file) throws IOException {
+	    InputStream is = new FileInputStream(file);
+
+	    long length = file.length();
+	    if (length > Integer.MAX_VALUE) {
+	        // File is too large
+	    }
+	    byte[] bytes = new byte[(int)length];
+	    
+	    int offset = 0;
+	    int numRead = 0;
+	    while (offset < bytes.length
+	           && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
+	        offset += numRead;
+	    }
+
+	    if (offset < bytes.length) {
+	        throw new IOException("Could not completely read file "+file.getName());
+	    }
+
+	    is.close();
+	    return bytes;
 	}
 }
