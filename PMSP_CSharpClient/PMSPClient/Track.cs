@@ -65,12 +65,14 @@ namespace PMSPClient
             //Instantiate track list.
             List<Track> tracks = new List<Track>();
 
+            //Drill down through child nodes to get track listings.
+            XmlNode trackList = protocol.GetList(ListType.Track).ChildNodes[1];
+            trackList = trackList.ChildNodes[0];
+
             //Insert tracks.
-            foreach (XmlNode track in protocol.GetList(ListType.Track).ChildNodes)
+            foreach (XmlNode track in trackList)
             {
-                /*
-                 * Insert tracks here.
-                 */
+                //tracks.Add(new Track(""));
             }
 
             //Return list.

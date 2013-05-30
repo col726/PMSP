@@ -119,6 +119,8 @@ namespace PMSPClient
         /// <returns></returns>
         public XmlDocument GetList(ListType xmllistType)
         {
+            XmlDocument responseDoc = new XmlDocument();
+
             //Get list of tracks or artists.
             switch (xmllistType)
             {
@@ -127,15 +129,6 @@ namespace PMSPClient
                     break;
                 case ListType.Track:
                     //get tracks
-
-                    //Instantiate new web request.
-                    var request = (HttpWebRequest)WebRequest.Create(_url);
-
-                    //Specify session id and add to request cookie container.
-                    //request.Headers["Cookie"] = _sessionId;
-
-                    //Specify PMSP Version and append to header.
-                    request.Headers["PMSP-Version"] = "1.1";
 
                     //Specify post data.
                     //Instantiate xml document.
@@ -220,40 +213,114 @@ namespace PMSPClient
 
                     //authenticationRequest.Save("test.xml");
 
-                    //Convert xml to byte stream for http post.
-                    string postData;
-                    using (var stringWriter = new StringWriter())
-                    using (var xmlTextWriter = XmlWriter.Create(stringWriter))
-                    {
-                        authenticationRequest.WriteTo(xmlTextWriter);
-                        xmlTextWriter.Flush();
-                        postData = stringWriter.GetStringBuilder().ToString();
-                    }
-
-                    byte[] data = Encoding.UTF8.GetBytes(postData);
-
-                    //Specify request parameters.
-                    request.Method = "POST";
-                    request.ContentType = "application/xml";
-                    request.Accept = "application/xml";
-
-                    //Get http request stream.
-                    using (Stream stream = request.GetRequestStream())
-                    {
-                        stream.Write(data, 0, data.Length);
-                    }
-
-                    //Get http response.
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                    //Get response content.
-                    string responseContent = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                    responseDoc.LoadXml(this.GetResponse(authenticationRequest));
 
                     break;
             }
 
             //Return response xml from server.
-            return new XmlDocument();
+            return responseDoc;
+        }
+
+        /// <summary>
+        /// Retrieves the specified file ID from the server.
+        /// </summary>
+        /// <param name="fileId">The file ID to retrieve.</param>
+        /// <returns></returns>
+        public XmlDocument RetrieveFile(string fileId)
+        {
+            //Specify post data.
+            //Instantiate xml document.
+            var authenticationRequest = new XmlDocument();
+
+            //Add the XML declaration section.
+            XmlDeclaration declaration = authenticationRequest.CreateXmlDeclaration("1.0", null, null);
+            declaration.Encoding = "UTF-8";
+
+            // Add the new node to the document.
+            XmlElement root = authenticationRequest.DocumentElement;
+            authenticationRequest.InsertBefore(declaration, root);
+
+            //Define retrieval.
+            XmlElement operation = authenticationRequest.CreateElement("Operation");
+            authenticationRequest.AppendChild(operation);
+
+            //Define type.
+            XmlElement type = authenticationRequest.CreateElement("type");
+            type.SetAttribute("class", "RetrievalRequest");
+            operation.AppendChild(type);
+
+            //Define PMSP ID parent.
+            XmlElement pmspIds = authenticationRequest.CreateElement("pmspIds");
+            type.AppendChild(pmspIds);
+
+            //Define file ID.
+            XmlElement id = authenticationRequest.CreateElement("id");
+            XmlText idText = authenticationRequest.CreateTextNode(fileId);
+            id.AppendChild(idText);
+            pmspIds.AppendChild(id);
+
+            XmlDocument responseDoc = new XmlDocument();
+            responseDoc.LoadXml(this.GetResponse(authenticationRequest));
+            return responseDoc;
+        }
+
+        /// <summary>
+        /// Creates a base HttpWebRequest object.
+        /// </summary>
+        /// <returns></returns>
+        private HttpWebRequest CreateRequest()
+        {
+            //Instantiate new web request.
+            var request = (HttpWebRequest)WebRequest.Create(_url);
+
+            //Specify session id and add to request cookie container.
+            request.Headers["Cookie"] = _sessionId;
+
+            //Specify PMSP Version and append to header.
+            request.Headers["PMSP-Version"] = "1.1";
+
+            return request;
+        }
+
+        /// <summary>
+        /// Gets the response XML for the supplied request XML.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="xml"></param>
+        /// <returns></returns>
+        private string GetResponse(XmlDocument xml)
+        {
+            var request = this.CreateRequest();
+
+            //Convert xml to byte stream for http post.
+            string postData;
+            using (var stringWriter = new StringWriter())
+            using (var xmlTextWriter = XmlWriter.Create(stringWriter))
+            {
+                xml.WriteTo(xmlTextWriter);
+                xmlTextWriter.Flush();
+                postData = stringWriter.GetStringBuilder().ToString();
+            }
+
+            byte[] data = Encoding.UTF8.GetBytes(postData);
+
+            //Specify request parameters.
+            request.Method = "POST";
+            request.ContentType = "application/xml";
+            request.Accept = "application/xml";
+
+            //Get http request stream.
+            using (Stream stream = request.GetRequestStream())
+            {
+                stream.Write(data, 0, data.Length);
+            }
+
+            //Get http response.
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            //Get response content.
+            return new StreamReader(response.GetResponseStream()).ReadToEnd();
         }
     }
 }

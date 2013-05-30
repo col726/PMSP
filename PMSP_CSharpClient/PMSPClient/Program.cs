@@ -139,7 +139,7 @@ namespace PMSPClient
                 if (protocol.IsAuthenticated)
                 {
                     //Instantiate Menu object with valid options.
-                    menu = new Menu("Would you like to browse artists or tracks?  Please enter (a) for artists, (t) for tracks, or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.A, ConsoleKey.T, ConsoleKey.Escape });
+                    menu = new Menu("Would you like to browse artists or tracks?  Please enter (a) for artists, (t) for tracks, or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.A, ConsoleKey.T, ConsoleKey.Escape, ConsoleKey.R });
 
                     //Write new line.
                     Utilities.WriteNewLine();
@@ -289,6 +289,13 @@ namespace PMSPClient
                                 tracks = Track.GetList(protocol, null);
 
                                 Console.WriteLine(Environment.NewLine + "Here are the available tracks:" + Environment.NewLine);
+                                break;
+                            
+                            //Retrieve file. **TEMP**
+                            case "R":
+
+                                System.Xml.XmlDocument xml = protocol.RetrieveFile("1");
+
                                 break;
 
                             //Exit program.
