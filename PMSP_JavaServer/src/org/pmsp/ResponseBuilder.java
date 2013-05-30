@@ -59,6 +59,8 @@ public class ResponseBuilder {
 		xs.useAttributeFor(AudioFile.class, "genre");
 		xs.useAttributeFor(AudioFile.class, "checksum");
 		Retrieval r = new Retrieval();
+		
+		//TODO need to actually fetch the data that was asked for, generate the checksum, the Base64 encoded data, etc
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
 		AudioFile af = new AudioFile("Artist", "Album", "Title", "Genre", "ID");
 		af.setChecksum("12345");
