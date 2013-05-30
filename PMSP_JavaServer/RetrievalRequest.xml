@@ -1,0 +1,8 @@
+<Operation>
+  <type class="RetrievalRequest">
+    <pmspIds>
+      <id>1</id>
+      <id>2</id>
+    </pmspIds>
+  </type>
+</Operation>

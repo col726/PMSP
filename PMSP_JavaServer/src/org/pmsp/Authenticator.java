@@ -9,7 +9,7 @@ public class Authenticator {
 	private static HashMap<String, String> userCredentials = new HashMap<String, String>();
 	
 	public Authenticator() {
-		String users = MediaServer.props.getProperty(PMSP_Constants.USERS);
+		String users = MediaServer.props.getProperty(PMSP_Constants.USERS_KEY);
 		String[] credentials = users.split(",");
 		for (String s : credentials) {
 			userCredentials.put(s.substring(0, s.indexOf(":")), s.substring(s.indexOf(":")+1));
