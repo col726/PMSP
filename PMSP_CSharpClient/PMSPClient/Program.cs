@@ -65,6 +65,9 @@ namespace PMSPClient
                     //Auto-discover PMSP server.
                     case "Y":
 
+                        //Set user credentials.
+                        protocol.SetCredentials();
+
                         //Inform user of time required for auto-discovery, and assumptions.
                         Console.WriteLine(String.Concat("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  PMSP auto-discovery assumes PMSP server(s) have ping enabled and firewalls configured to allow incoming traffic to port ",
                                           protocol.Server.Port,
@@ -112,6 +115,9 @@ namespace PMSPClient
 
                         //Write new line.
                         Utilities.WriteNewLine();
+
+                        //Set user credentials.
+                        protocol.SetCredentials();
 
                         //Attempt handshake
                         if (protocol.Authenticate())

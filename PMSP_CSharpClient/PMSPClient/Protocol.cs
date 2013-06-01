@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml;
+using System.Web;
 
 namespace PMSPClient
 {
@@ -15,7 +16,10 @@ namespace PMSPClient
     class Protocol
     {
         //Private fields.
-        private Server _server = new Server();
+        private Server _server;
+        private string _version = "1.0";
+        private string _userName;
+        private string _password;
         private string _sessionId;
         private bool _isConnected = false;
         private bool _isAuthenticated = false;
@@ -30,16 +34,20 @@ namespace PMSPClient
         /// <summary>
         /// Main constructor.
         /// </summary>
-        public Protocol(){}
+        public Protocol()
+        {
+            //Instantiate server with protocol version.
+            _server = new Server(_version);
+        }
 
         /// <summary>
-        /// Authenticate user.
+        /// Sets the username and password of the current user.
         /// </summary>
-        public bool Authenticate()
+        public void SetCredentials()
         {
             //Get user name.
             Console.WriteLine("Please enter your User Name: ");
-            string userName = Console.ReadLine();
+            _userName = Console.ReadLine();
 
             //Get password.
             Console.WriteLine("Please enter your Password: ");
@@ -49,47 +57,45 @@ namespace PMSPClient
             {
                 temp = Console.ReadKey().KeyChar;
                 if (temp == 13) break;
-                password += temp.ToString();
+                _password += temp.ToString();
                 Console.Write((char)8);
                 Console.Write("*");
             } while (true);
+        }
 
+        /// <summary>
+        /// STATEFUL: Authenticate user.
+        /// </summary>
+        public bool Authenticate()
+        {
             //Inform user of authentication process.
             Utilities.WriteNewLine();
-            Console.WriteLine("Authenticating, please wait...");
+            Console.WriteLine("Now attempting authentication on server " + _server.Url + "...");
             Utilities.WriteNewLine();
 
-            //Instantiate web request.
+            //Determine whether or not we're authenticated.
             try
             {
-                //Determine whether or not we're authenticated.
-                try
+                //Create request.
+                _server.CreateRequest(_userName, _password);
+
+                //Get http response.
+                HttpWebResponse response = _server.GetResponse();
+
+                //If the response is null, there was an error.  Set exception message.
+                if (response == null)
                 {
-                    //Create request.
-                    _server.CreateRequest(userName, password);
-
-                    //Get http response.
-                    HttpWebResponse response = _server.GetResponse();
-
-                    //Verify PMSP Version.
-                    if (response.Headers["PMSP-Version"] == "1.1")
-                    {
-                        //Set cookie
-                        _sessionId = response.Headers["Set-Cookie"];
-
-                        //Set boolean.
-                        _isAuthenticated = true;
-                    }
-
-                    //Invalid PMSP Version.
-                    else
-                    {
-                        _exception = "Invalid PMSP Version.";
-                    }
+                    _exception = _server.Exception;
                 }
-                catch (WebException exception)
+
+                //Otherwise, set cookie value for subsequent requests.
+                else
                 {
-                    _exception = exception.Message;
+                    //Set cookie
+                    _sessionId = response.Headers["Set-Cookie"];
+
+                    //Set boolean.
+                    _isAuthenticated = true;
                 }
             }
             catch (Exception exception)
@@ -102,7 +108,7 @@ namespace PMSPClient
         }
 
         /// <summary>
-        /// Gets a list of artists or tracks based on the input parameter.
+        /// STATEFUL: Gets a list of artists or tracks based on the input parameter.
         /// </summary>
         /// <param name="listType"></param>
         /// <returns></returns>
@@ -193,15 +199,28 @@ namespace PMSPClient
                     break;
             }
 
-            //Load xml from response.
-            _server.Response.LoadXml(new StreamReader(_server.GetResponse(_server.RequestData).GetResponseStream()).ReadToEnd());
+            //Get response.
+            HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+            //If the response is null, there was an error.  Set exception message.
+            if (response == null)
+            {
+                _exception = _server.Exception;
+            }
+
+            //Otherwise, load xml from response.
+            else
+            {
+                //Load xml from response.
+                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+            }
 
             //Return list.
             return _server.Response;
         }
 
         /// <summary>
-        /// Retrieves the specified file ID from the server.
+        /// STATEFUL: Retrieves the specified file ID from the server.
         /// </summary>
         /// <param name="fileId">The file ID to retrieve.</param>
         /// <returns></returns>
@@ -229,8 +248,21 @@ namespace PMSPClient
             id.AppendChild(idText);
             pmspIds.AppendChild(id);
 
-            //Load xml from response.
-            _server.Response.LoadXml(new StreamReader(_server.GetResponse(_server.RequestData).GetResponseStream()).ReadToEnd());
+            //Get response.
+            HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+            //If the response is null, there was an error.  Set exception message.
+            if (response == null)
+            {
+                _exception = _server.Exception;
+            }
+
+            //Otherwise, load xml from response.
+            else
+            {
+                //Load xml from response.
+                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+            }
 
             //Return file.
             return _server.Response;

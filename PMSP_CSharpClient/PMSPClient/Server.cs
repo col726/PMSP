@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web;
 using System.Xml;
 
 namespace PMSPClient
@@ -18,9 +19,11 @@ namespace PMSPClient
         private string _ip;
         private string _url;
         private const string _port = "31415";
+        private string _protocolVersion;
         private HttpWebRequest _request;
         private XmlDocument _requestData;
         private XmlDocument _response = new XmlDocument();
+        private string _exception;
 
         //Public properties.
         public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
@@ -29,11 +32,16 @@ namespace PMSPClient
         public HttpWebRequest Request { get { return _request; } }
         public XmlDocument RequestData { get { return _requestData; } }
         public XmlDocument Response { get { return _response; } }
+        public string Exception { get { return _exception; } }
 
         /// <summary>
         /// Main constructor.
         /// </summary>
-        public Server(){}
+        public Server(string protocolVersion)
+        {
+            //Set protocol version.
+            _protocolVersion = protocolVersion;
+        }
 
         /// <summary>
         /// Creates a new web request with default parameters.
@@ -44,7 +52,7 @@ namespace PMSPClient
             _request = (HttpWebRequest)WebRequest.Create(_url);
 
             //Specify PMSP Version and append to header.
-            _request.Headers["PMSP-Version"] = "1.1";
+            _request.Headers["PMSP-Version"] = _protocolVersion;
 
             //Specify request parameters.
             _request.Method = "POST";
@@ -100,7 +108,15 @@ namespace PMSPClient
         public HttpWebResponse GetResponse()
         {
             //Return response.
-            return (HttpWebResponse)_request.GetResponse();
+            try
+            {
+                return (HttpWebResponse)_request.GetResponse();
+            }
+            catch (WebException exception)
+            {
+                HandleException(exception);
+                return null;
+            }
         }
 
         /// <summary>
@@ -132,6 +148,48 @@ namespace PMSPClient
 
             //Return response
             return GetResponse();
+        }
+
+        /// <summary>
+        /// Handles web & general exception and sets user-friendly message.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private void HandleException(WebException exception)
+        {
+            if (exception.Status == WebExceptionStatus.ProtocolError)
+            {
+                var response = exception.Response as HttpWebResponse;
+                if (response != null)
+                {
+                    switch ((int)response.StatusCode)
+                    {
+                        case 400:
+                            _exception = "PMSP protocol version " + _protocolVersion + " was either unspecified or contained illegal characters.";
+                            break;
+                        case 401:
+                            _exception = "Incorrect username and/or password.";
+                            break;
+                        case 500:
+                            _exception = "The submitted XML was incorrectly formatted.";
+                            break;
+                        case 501:
+                            _exception = "PMSP protocol version " + _protocolVersion + " is not supported on this server.";
+                            break;
+                        default:
+                            _exception = exception.Message;
+                            break;
+                    }
+                }
+                else
+                {
+                    _exception = exception.Message;
+                }
+            }
+            else
+            {
+                _exception = exception.Message;
+            }
         }
     }
 }
