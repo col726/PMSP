@@ -67,7 +67,7 @@ namespace PMSPClient
 
                         //Inform user of time required for auto-discovery, and assumptions.
                         Console.WriteLine(String.Concat("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  PMSP auto-discovery assumes PMSP server(s) have ping enabled and firewalls configured to allow incoming traffic to port ",
-                                          protocol.Port,
+                                          protocol.Server.Port,
                                           ".  Please wait..."));
 
                         //Write new line.
@@ -79,8 +79,8 @@ namespace PMSPClient
                         //For each IP in list, attempt PMSP handshake until successful.
                         foreach (string ip in ips)
                         {
-                            //Set protocol ip.
-                            protocol.Ip = ip;
+                            //Set server ip.
+                            protocol.Server.Ip = ip;
 
                             //Attempt handshake
                             if (protocol.Authenticate())
@@ -92,7 +92,7 @@ namespace PMSPClient
                         //Inform user of auto-discovery result.
                         if (protocol.IsConnected)
                         {
-                            Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Url + ".");
+                            Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
                         }
                         else
                         {
@@ -108,7 +108,7 @@ namespace PMSPClient
                         Console.WriteLine("Please specify the full URL, including port number, of the PMSP Server to which you'd like to connect and press ENTER:");
 
                         //Set PMSP URL.
-                        protocol.Url = Console.ReadLine().Trim();
+                        protocol.Server.Url = Console.ReadLine().Trim();
 
                         //Write new line.
                         Utilities.WriteNewLine();
@@ -116,11 +116,11 @@ namespace PMSPClient
                         //Attempt handshake
                         if (protocol.Authenticate())
                         {
-                            Console.WriteLine("Congratulations!  You have successfully logged in to PMSP Server " + protocol.Url + ".");
+                            Console.WriteLine("Congratulations!  You have successfully logged in to PMSP Server " + protocol.Server.Url + ".");
                         }
                         else
                         {
-                            Console.WriteLine("Unfortunately, we were unable to log you in to PMSP Server " + protocol.Url + ".  " + protocol.Exception);
+                            Console.WriteLine("Unfortunately, we were unable to log you in to PMSP Server " + protocol.Server.Url + ".  " + protocol.Exception);
                         }
 
                         //Write new line.
@@ -294,7 +294,7 @@ namespace PMSPClient
                             //Retrieve file. **TEMP**
                             case "R":
 
-                                System.Xml.XmlDocument xml = protocol.RetrieveFile("1");
+                                System.Xml.XmlDocument xml = protocol.GetFile("1");
 
                                 break;
 

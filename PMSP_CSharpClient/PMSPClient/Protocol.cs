@@ -15,19 +15,14 @@ namespace PMSPClient
     class Protocol
     {
         //Private fields.
-        private string _ip;
-        private string _url;
-        private const string _port = "31415";
+        private Server _server = new Server();
+        private string _sessionId;
         private bool _isConnected = false;
         private bool _isAuthenticated = false;
         private string _exception;
-        private string _sessionId;
 
         //Public properties.
-        //Set url when ip is set.
-        public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
-        public string Url { get { return _url; } set { _url = value; } }
-        public string Port { get { return _port; } }
+        public Server Server { get { return _server; } }
         public bool IsConnected { get { return _isConnected; } }
         public bool IsAuthenticated { get { return _isAuthenticated; } }
         public string Exception { get { return _exception; } }
@@ -67,28 +62,22 @@ namespace PMSPClient
             //Instantiate web request.
             try
             {
-                //Instantiate new web request.
-                var request = (HttpWebRequest)WebRequest.Create(_url);
-
-                //Specify credentials and append to header.
-                string credentials = userName + ":" + password;
-                credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
-                request.Headers["Authorization"] = "Basic " + credentials;
-
-                //Specify PMSP Version and append to header.
-                request.Headers["PMSP-Version"] = "1.1";
-
                 //Determine whether or not we're authenticated.
                 try
                 {
+                    //Create request.
+                    _server.CreateRequest(userName, password);
+
                     //Get http response.
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    HttpWebResponse response = _server.GetResponse();
 
                     //Verify PMSP Version.
                     if (response.Headers["PMSP-Version"] == "1.1")
                     {
                         //Set cookie
                         _sessionId = response.Headers["Set-Cookie"];
+
+                        //Set boolean.
                         _isAuthenticated = true;
                     }
 
@@ -119,7 +108,8 @@ namespace PMSPClient
         /// <returns></returns>
         public XmlDocument GetList(ListType xmllistType)
         {
-            XmlDocument responseDoc = new XmlDocument();
+            //Create new request.
+            _server.CreateRequest(_sessionId);
 
             //Get list of tracks or artists.
             switch (xmllistType)
@@ -127,99 +117,87 @@ namespace PMSPClient
                 case ListType.Artist:
                     //get artists
                     break;
+
                 case ListType.Track:
-                    //get tracks
-
-                    //Specify post data.
-                    //Instantiate xml document.
-                    var authenticationRequest = new XmlDocument();
-            
-                    //Add the XML declaration section.
-                    XmlDeclaration declaration = authenticationRequest.CreateXmlDeclaration("1.0", null, null);
-                    declaration.Encoding = "UTF-8";
-
-                    // Add the new node to the document.
-                    XmlElement root = authenticationRequest.DocumentElement;
-                    authenticationRequest.InsertBefore(declaration, root);
             
                     //Define operation.
-                    XmlElement operation = authenticationRequest.CreateElement("Operation");
-                    authenticationRequest.AppendChild(operation);
+                    XmlElement operation = _server.RequestData.CreateElement("Operation");
+                    _server.RequestData.AppendChild(operation);
             
                     //Define type.
-                    XmlElement type = authenticationRequest.CreateElement("type");
+                    XmlElement type = _server.RequestData.CreateElement("type");
                     type.SetAttribute("class", "ListRequest");
                     operation.AppendChild(type);
 
                     //Define category.
-                    XmlElement category = authenticationRequest.CreateElement("category");
-                    XmlText categoryText = authenticationRequest.CreateTextNode("Music");
+                    XmlElement category = _server.RequestData.CreateElement("category");
+                    XmlText categoryText = _server.RequestData.CreateTextNode("Music");
                     category.AppendChild(categoryText);
                     type.AppendChild(category);
 
                     //Define list type.
-                    XmlElement listType = authenticationRequest.CreateElement("listType");
-                    XmlText listTypeText = authenticationRequest.CreateTextNode("Track");
+                    XmlElement listType = _server.RequestData.CreateElement("listType");
+                    XmlText listTypeText = _server.RequestData.CreateTextNode("Track");
                     listType.AppendChild(listTypeText);
                     type.AppendChild(listType);
 
                     //Define criteria.
-                    XmlElement criteria = authenticationRequest.CreateElement("criteria");
+                    XmlElement criteria = _server.RequestData.CreateElement("criteria");
                     type.AppendChild(criteria);
 
                     //Define criteria 1st ListCriteria
-                    XmlElement listCriteria = authenticationRequest.CreateElement("ListCriteria");
+                    XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
                     criteria.AppendChild(listCriteria);
 
                     //Define list criteria type.
-                    XmlElement listCriteriaType = authenticationRequest.CreateElement("type");
-                    XmlText listCriteriaTypeText = authenticationRequest.CreateTextNode("Music");
+                    XmlElement listCriteriaType = _server.RequestData.CreateElement("type");
+                    XmlText listCriteriaTypeText = _server.RequestData.CreateTextNode("Music");
                     listCriteriaType.AppendChild(listCriteriaTypeText);
                     listCriteria.AppendChild(listCriteriaType);
 
                     //Define list criteria type.
-                    XmlElement listCriteriaName = authenticationRequest.CreateElement("name");
-                    XmlText listCriteriaNameText = authenticationRequest.CreateTextNode("Artist");
+                    XmlElement listCriteriaName = _server.RequestData.CreateElement("name");
+                    XmlText listCriteriaNameText = _server.RequestData.CreateTextNode("Artist");
                     listCriteriaName.AppendChild(listCriteriaNameText);
                     listCriteria.AppendChild(listCriteriaName);
 
                     //Define list criteria type.
-                    XmlElement listCriteriaValue = authenticationRequest.CreateElement("value");
-                    XmlText listCriteriaValueText = authenticationRequest.CreateTextNode("Smith");
+                    XmlElement listCriteriaValue = _server.RequestData.CreateElement("value");
+                    XmlText listCriteriaValueText = _server.RequestData.CreateTextNode("Smith");
                     listCriteriaValue.AppendChild(listCriteriaValueText);
                     listCriteria.AppendChild(listCriteriaValue);
 
                     //Define criteria 2nd ListCriteria
-                    listCriteria = authenticationRequest.CreateElement("ListCriteria");
+                    listCriteria = _server.RequestData.CreateElement("ListCriteria");
                     criteria.AppendChild(listCriteria);
 
                     //Define list criteria type.
-                    listCriteriaType = authenticationRequest.CreateElement("type");
-                    listCriteriaTypeText = authenticationRequest.CreateTextNode("Music");
+                    listCriteriaType = _server.RequestData.CreateElement("type");
+                    listCriteriaTypeText = _server.RequestData.CreateTextNode("Music");
                     listCriteriaType.AppendChild(listCriteriaTypeText);
                     listCriteria.AppendChild(listCriteriaType);
 
                     //Define list criteria type.
-                    listCriteriaName = authenticationRequest.CreateElement("name");
-                    listCriteriaNameText = authenticationRequest.CreateTextNode("Artist");
+                    listCriteriaName = _server.RequestData.CreateElement("name");
+                    listCriteriaNameText = _server.RequestData.CreateTextNode("Artist");
                     listCriteriaName.AppendChild(listCriteriaNameText);
                     listCriteria.AppendChild(listCriteriaName);
 
                     //Define list criteria type.
-                    listCriteriaValue = authenticationRequest.CreateElement("value");
-                    listCriteriaValueText = authenticationRequest.CreateTextNode("Green");
+                    listCriteriaValue = _server.RequestData.CreateElement("value");
+                    listCriteriaValueText = _server.RequestData.CreateTextNode("Green");
                     listCriteriaValue.AppendChild(listCriteriaValueText);
                     listCriteria.AppendChild(listCriteriaValue);
 
-                    //authenticationRequest.Save("test.xml");
-
-                    responseDoc.LoadXml(this.GetResponse(authenticationRequest));
-
+                    //Break.
                     break;
             }
 
-            //Return response xml from server.
-            return responseDoc;
+            //Load xml from response.
+            _server.Response.LoadXml(new StreamReader(_server.GetResponse(_server.RequestData).GetResponseStream()).ReadToEnd());
+
+            //Return list.
+            return _server.Response;
         }
 
         /// <summary>
@@ -227,100 +205,35 @@ namespace PMSPClient
         /// </summary>
         /// <param name="fileId">The file ID to retrieve.</param>
         /// <returns></returns>
-        public XmlDocument RetrieveFile(string fileId)
+        public XmlDocument GetFile(string fileId)
         {
-            //Specify post data.
-            //Instantiate xml document.
-            var authenticationRequest = new XmlDocument();
-
-            //Add the XML declaration section.
-            XmlDeclaration declaration = authenticationRequest.CreateXmlDeclaration("1.0", null, null);
-            declaration.Encoding = "UTF-8";
-
-            // Add the new node to the document.
-            XmlElement root = authenticationRequest.DocumentElement;
-            authenticationRequest.InsertBefore(declaration, root);
+            //Create new request.
+            _server.CreateRequest(_sessionId);
 
             //Define retrieval.
-            XmlElement operation = authenticationRequest.CreateElement("Operation");
-            authenticationRequest.AppendChild(operation);
+            XmlElement operation = _server.RequestData.CreateElement("Operation");
+            _server.RequestData.AppendChild(operation);
 
             //Define type.
-            XmlElement type = authenticationRequest.CreateElement("type");
+            XmlElement type = _server.RequestData.CreateElement("type");
             type.SetAttribute("class", "RetrievalRequest");
             operation.AppendChild(type);
 
             //Define PMSP ID parent.
-            XmlElement pmspIds = authenticationRequest.CreateElement("pmspIds");
+            XmlElement pmspIds = _server.RequestData.CreateElement("pmspIds");
             type.AppendChild(pmspIds);
 
             //Define file ID.
-            XmlElement id = authenticationRequest.CreateElement("id");
-            XmlText idText = authenticationRequest.CreateTextNode(fileId);
+            XmlElement id = _server.RequestData.CreateElement("id");
+            XmlText idText = _server.RequestData.CreateTextNode(fileId);
             id.AppendChild(idText);
             pmspIds.AppendChild(id);
 
-            XmlDocument responseDoc = new XmlDocument();
-            responseDoc.LoadXml(this.GetResponse(authenticationRequest));
-            return responseDoc;
-        }
+            //Load xml from response.
+            _server.Response.LoadXml(new StreamReader(_server.GetResponse(_server.RequestData).GetResponseStream()).ReadToEnd());
 
-        /// <summary>
-        /// Creates a base HttpWebRequest object.
-        /// </summary>
-        /// <returns></returns>
-        private HttpWebRequest CreateRequest()
-        {
-            //Instantiate new web request.
-            var request = (HttpWebRequest)WebRequest.Create(_url);
-
-            //Specify session id and add to request cookie container.
-            request.Headers["Cookie"] = _sessionId;
-
-            //Specify PMSP Version and append to header.
-            request.Headers["PMSP-Version"] = "1.1";
-
-            return request;
-        }
-
-        /// <summary>
-        /// Gets the response XML for the supplied request XML.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        private string GetResponse(XmlDocument xml)
-        {
-            var request = this.CreateRequest();
-
-            //Convert xml to byte stream for http post.
-            string postData;
-            using (var stringWriter = new StringWriter())
-            using (var xmlTextWriter = XmlWriter.Create(stringWriter))
-            {
-                xml.WriteTo(xmlTextWriter);
-                xmlTextWriter.Flush();
-                postData = stringWriter.GetStringBuilder().ToString();
-            }
-
-            byte[] data = Encoding.UTF8.GetBytes(postData);
-
-            //Specify request parameters.
-            request.Method = "POST";
-            request.ContentType = "application/xml";
-            request.Accept = "application/xml";
-
-            //Get http request stream.
-            using (Stream stream = request.GetRequestStream())
-            {
-                stream.Write(data, 0, data.Length);
-            }
-
-            //Get http response.
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-            //Get response content.
-            return new StreamReader(response.GetResponseStream()).ReadToEnd();
+            //Return file.
+            return _server.Response;
         }
     }
 }
