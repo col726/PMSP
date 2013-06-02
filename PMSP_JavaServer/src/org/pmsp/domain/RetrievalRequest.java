@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 @XStreamAlias("RetrievalRequest")
 public class RetrievalRequest extends RequestType {
+	@XStreamAsAttribute
 	private String mediaType;
 	
 	@XStreamImplicit(itemFieldName="id")

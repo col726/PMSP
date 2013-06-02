@@ -92,6 +92,7 @@ public class XmlTester {
 		
 		rr.getPmspIds().add(new Integer(1));
 		rr.getPmspIds().add(new Integer(2));
+		rr.setMediaType("Music");
 		Operation op = new Operation();
 		op.setType(rr);
 		System.out.println(xs.toXML(op));
