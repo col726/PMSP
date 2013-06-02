@@ -54,6 +54,8 @@ public class ResponseBuilder {
 	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException {
 		PrintStream body = response.getPrintStream();
 		
+		String testFile = "res/testSound1.mp3";
+		
 		XStream xs = new XStream(new DomDriver());
 		xs.alias("Retrieval", Retrieval.class);
 		xs.alias("AudioFile", AudioFile.class);
@@ -68,8 +70,14 @@ public class ResponseBuilder {
 		//TODO need to actually fetch the data that was asked for, generate the checksum, the Base64 encoded data, etc
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
 		AudioFile af = new AudioFile("Artist", "Album", "Title", "Genre", "ID");
-		af.setChecksum("12345");//getCheckSum
-		af.setData("base64encodeddata");//encodeBase64
+		try {
+			af.setChecksum(getChecksum(testFile));
+			af.setData(this.encodeBase64(testFile));//encodeBase64
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//getCheckSum
+		
 		mediaFiles.add(af);
 		af = new AudioFile("Artist2", "Album2", "Title2", "Genre2", "ID2");
 		af.setChecksum("98765");
@@ -81,13 +89,13 @@ public class ResponseBuilder {
 		body.close();
 	}
 	
-	private byte[] createChecksum(String fileName) throws Exception
+	public byte[] createChecksum(String fileName) throws Exception
 	{
 		InputStream fis = new FileInputStream(fileName);
 		
 		byte[] buffer = new byte[1024];
 		
-		MessageDigest complete = MessageDigest.getInstance("MD5");
+		MessageDigest complete = MessageDigest.getInstance("SHA-1");
 	     int numRead;
 	     do {
 	      numRead = fis.read(buffer);
@@ -99,7 +107,7 @@ public class ResponseBuilder {
 	     return complete.digest();
 	}
 	
-	private String getChecksum(String filename) throws Exception {
+	public String getChecksum(String filename) throws Exception {
 	     byte[] b = createChecksum(filename);
 	     String result = "";
 	     for (int i=0; i < b.length; i++) {
@@ -109,7 +117,7 @@ public class ResponseBuilder {
 	     return result;
 	   }
 	
-	private String encodeBase64(String filename) throws Exception
+	public String encodeBase64(String filename) throws Exception
 	{
 		File file = new File(filename);
 		byte[] bytes = loadFile(file);
@@ -120,7 +128,7 @@ public class ResponseBuilder {
 	}
 	
 
-	private static byte[] loadFile(File file) throws IOException {
+	public static byte[] loadFile(File file) throws IOException {
 	    InputStream is = new FileInputStream(file);
 
 	    long length = file.length();
