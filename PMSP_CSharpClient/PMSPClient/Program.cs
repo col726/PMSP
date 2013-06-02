@@ -94,7 +94,7 @@ namespace PMSPClient
                         }
                         
                         //Inform user of auto-discovery result.
-                        if (protocol.IsConnected)
+                        if (protocol.IsAuthenticated)
                         {
                             Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
                         }

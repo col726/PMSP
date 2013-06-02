@@ -20,4 +20,3 @@ C:\Users\bth29\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\NAud
 C:\Users\bth29\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.config
 C:\Users\bth29\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\PMSPClient.exe.config
-C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\PMSPClient.csprojResolveAssemblyReference.cache

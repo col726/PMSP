@@ -21,13 +21,11 @@ namespace PMSPClient
         private string _userName;
         private string _password;
         private string _sessionId;
-        private bool _isConnected = false;
         private bool _isAuthenticated = false;
         private string _exception;
 
         //Public properties.
         public Server Server { get { return _server; } }
-        public bool IsConnected { get { return _isConnected; } }
         public bool IsAuthenticated { get { return _isAuthenticated; } }
         public string Exception { get { return _exception; } }
 

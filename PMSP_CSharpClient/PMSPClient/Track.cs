@@ -24,6 +24,8 @@ namespace PMSPClient
         private string _mp3TempFileName;
         private string _title;
         private Artist _artist;
+        private string _album;
+        private string _genre;
         private WaveOut _audio;
         private string _exception;
         private bool _isLoaded;
@@ -36,12 +38,14 @@ namespace PMSPClient
         public bool IsLoaded { get { return _isLoaded; } set { _isLoaded = value; } }
 
         //Main constructor.
-        public Track(string id, Artist artist, string title)
+        public Track(string id, Artist artist, string title, string album, string genre)
         {
             //Set fields.
             _id = id;
             _artist = artist;
             _title = title;
+            _album = album;
+            _genre = genre;
 
             //Populate metadata.
             //PopulateMetadata();
@@ -85,8 +89,8 @@ namespace PMSPClient
             */
 
             /*test data*/
-            tracks.Add(new Track("1", artist, "New York"));
-            tracks.Add(new Track("2", artist, "Unknown"));
+            tracks.Add(new Track("1", artist, "New York", "Prologue", "Folk"));
+            tracks.Add(new Track("2", artist, "Michigan", "Prologue", "Folk"));
 
             //Return list.
             return tracks;
