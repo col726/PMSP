@@ -236,17 +236,14 @@ namespace PMSPClient
             //Define type.
             XmlElement type = _server.RequestData.CreateElement("type");
             type.SetAttribute("class", "RetrievalRequest");
+            type.SetAttribute("mediaType", "Music");
             operation.AppendChild(type);
-
-            //Define PMSP ID parent.
-            XmlElement pmspIds = _server.RequestData.CreateElement("pmspIds");
-            type.AppendChild(pmspIds);
 
             //Define file ID.
             XmlElement id = _server.RequestData.CreateElement("id");
             XmlText idText = _server.RequestData.CreateTextNode(fileId);
             id.AppendChild(idText);
-            pmspIds.AppendChild(id);
+            type.AppendChild(id);
 
             //Get response.
             HttpWebResponse response = _server.GetResponse(_server.RequestData);
