@@ -1,24 +1,17 @@
 package org.pmsp.domain;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
+@XStreamAlias("ListCriteria")
 public class ListCriteria {
 
-	private String type;
 	private String name;
 	private String value;
 
-	public ListCriteria(String type, String name, String value) {
+	public ListCriteria(String name, String value) {
 		super();
-		this.type = type;
 		this.name = name;
 		this.value = value;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public String getName() {

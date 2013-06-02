@@ -1,28 +1,24 @@
 package org.pmsp;
 import java.io.File;
 
-import org.pmsp.domain.ListCriteria;
-import org.pmsp.domain.ListRequest;
 import org.pmsp.domain.Operation;
-import org.pmsp.domain.RetrievalRequest;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 
 public class MessageParser {
 	
 
 public Operation parse(String xml) {
-	XStream xs = new XStream(new DomDriver());;
-	xs.alias("Operation", Operation.class);
-	xs.alias("ListCriteria", ListCriteria.class);
-	xs.alias("ListRequest", ListRequest.class);
-	xs.alias("RetrievalRequest", RetrievalRequest.class);
-	xs.alias("id", String.class);
-	
+//	XStream xs = new XStream(new StaxDriver());;
+//	xs.alias("Operation", Operation.class);
+//	xs.alias("ListCriteria", ListCriteria.class);
+//	xs.alias("ListRequest", ListRequest.class);
+//	xs.alias("RetrievalRequest", RetrievalRequest.class);
+//	xs.alias("id", String.class);
+//	xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, ListRequest.class, RetrievalRequest.class});
 	Operation br = null;
 	try {
-	br = (Operation) xs.fromXML(xml);
+	br = (Operation) MediaServer.getXmlParser().fromXML(xml);
 	}
 	catch (Throwable t) {
 		t.printStackTrace();
@@ -35,7 +31,7 @@ public Operation parse(String xml) {
 }
 
 public Operation parseFile(File xml) {
-	XStream xs = new XStream(new DomDriver());;
+	XStream xs = MediaServer.getXmlParser();
 	
 	Operation br = null;
 	try {

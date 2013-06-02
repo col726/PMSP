@@ -3,14 +3,29 @@ package org.pmsp.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RetrievalRequest extends RequestType {
-	private List<String> pmspIds = new ArrayList<String>();
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
-	public List<String> getPmspIds() {
+@XStreamAlias("RetrievalRequest")
+public class RetrievalRequest extends RequestType {
+	private String mediaType;
+	
+	@XStreamImplicit(itemFieldName="id")
+	private List<Integer> pmspIds = new ArrayList<Integer>();
+
+	public List<Integer> getPmspIds() {
 		return pmspIds;
 	}
 
-	public void setPmspIds(List<String> pmspIds) {
+	public void setPmspIds(List<Integer> pmspIds) {
 		this.pmspIds = pmspIds;
+	}
+
+	public String getMediaType() {
+		return mediaType;
+	}
+
+	public void setMediaType(String mediaType) {
+		this.mediaType = mediaType;
 	}
 }

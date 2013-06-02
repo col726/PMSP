@@ -7,18 +7,18 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.pmsp.domain.AudioFile;
 import org.pmsp.domain.Listing;
 import org.pmsp.domain.MediaFile;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.Retrieval;
+import org.pmsp.domain.RetrievalRequest;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-import org.apache.commons.codec.binary.Base64;
 
 public class ResponseBuilder {
 
@@ -31,60 +31,32 @@ public class ResponseBuilder {
 		
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
-		XStream xs = new XStream(new DomDriver());
-		xs.alias("Listing", Listing.class);
-		xs.alias("AudioFile", AudioFile.class);
-		xs.useAttributeFor(AudioFile.class, "pmspId");
-		xs.useAttributeFor(AudioFile.class, "artist");
-		xs.useAttributeFor(AudioFile.class, "album");
-		xs.useAttributeFor(AudioFile.class, "title");
-		xs.useAttributeFor(AudioFile.class, "genre");
 		Listing l = new Listing();
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
-		mediaFiles.add(new AudioFile("Artist", "Album", "Title", "Genre", "ID"));
-		mediaFiles.add(new AudioFile("Artist2", "Album2", "Title2", "Genre2", "ID2"));
+		mediaFiles.add(new AudioFile("Artist", "Album", "Title", "Genre", 1, "file1"));
+		mediaFiles.add(new AudioFile("Artist2", "Album2", "Title2", "Genre2", 2, "file2"));
 		l.setMediaFiles(mediaFiles);
 		
 		
-		body.println(xs.toXML(l));			
+		body.println(MediaServer.getXmlParser().toXML(l));			
 
 		body.close();
 	}
 	
-	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException {
+	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException, Exception {
 		PrintStream body = response.getPrintStream();
 		
-		String testFile = "res/testSound1.mp3";
-		
-		XStream xs = new XStream(new DomDriver());
-		xs.alias("Retrieval", Retrieval.class);
-		xs.alias("AudioFile", AudioFile.class);
-		xs.useAttributeFor(AudioFile.class, "pmspId");
-		xs.useAttributeFor(AudioFile.class, "artist");
-		xs.useAttributeFor(AudioFile.class, "album");
-		xs.useAttributeFor(AudioFile.class, "title");
-		xs.useAttributeFor(AudioFile.class, "genre");
-		xs.useAttributeFor(AudioFile.class, "checksum");
 		Retrieval r = new Retrieval();
 		
-		//TODO need to actually fetch the data that was asked for, generate the checksum, the Base64 encoded data, etc
-		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
-		AudioFile af = new AudioFile("Artist", "Album", "Title", "Genre", "ID");
-		try {
-			af.setChecksum(getChecksum(testFile));
-			af.setData(this.encodeBase64(testFile));//encodeBase64
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}//getCheckSum
-		
-		mediaFiles.add(af);
-		af = new AudioFile("Artist2", "Album2", "Title2", "Genre2", "ID2");
-		af.setChecksum("98765");
-		af.setData("base64encodeddata2");
-		mediaFiles.add(af);
-		r.setMediaFiles(mediaFiles);
-		body.println(xs.toXML(r));	
+		List<AudioFile> files = new MusicDao().findFiles(((RetrievalRequest)operation.getType()).getPmspIds());
+
+		for (AudioFile f : files) {
+			String s = encodeBase64(f.getFullFilePath());
+			f.setData(s);
+			f.setChecksum(DigestUtils.sha1Hex(s));
+		}
+		r.setMediaFiles(files);
+		body.println(MediaServer.getXmlParser().toXML(r));	
 
 		body.close();
 	}

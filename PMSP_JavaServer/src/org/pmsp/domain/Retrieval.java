@@ -2,14 +2,17 @@ package org.pmsp.domain;
 
 import java.util.List;
 
-public class Retrieval {
-	private List<MediaFile> mediaFiles;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
-	public List<MediaFile> getMediaFiles() {
+@XStreamAlias("Retrieval")
+public class Retrieval {
+	private List<? extends MediaFile> mediaFiles;
+
+	public List<? extends MediaFile> getMediaFiles() {
 		return mediaFiles;
 	}
 
-	public void setMediaFiles(List<MediaFile> mediaFiles) {
+	public void setMediaFiles(List<? extends MediaFile> mediaFiles) {
 		this.mediaFiles = mediaFiles;
 	}
 }
