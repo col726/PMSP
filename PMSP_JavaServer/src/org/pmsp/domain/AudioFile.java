@@ -1,18 +1,29 @@
 package org.pmsp.domain;
 
+import org.pmsp.MediaServer;
+import org.pmsp.PMSP_Constants;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+@XStreamAlias("AudioFile")
 public class AudioFile extends MediaFile {
 
+	@XStreamAsAttribute
 	private String artist;
+	@XStreamAsAttribute
 	private String album;
+	@XStreamAsAttribute
 	private String title;
+	@XStreamAsAttribute
 	private String genre;
 	
-	public AudioFile(String artist, String album, String title, String genre, String pmspId) {
+	public AudioFile(String artist, String album, String title, String genre, Integer pmspId, String fileName) {
 		super(pmspId);
 		this.artist = artist;
 		this.album = album;
 		this.title = title;
 		this.genre = genre;
+		this.fileName = fileName;
 	}
 	
 	
@@ -39,6 +50,16 @@ public class AudioFile extends MediaFile {
 	}
 	public void setGenre(String genre) {
 		this.genre = genre;
+	}
+
+
+	@Override
+	public String getFullFilePath() {
+		StringBuilder sb = new StringBuilder();
+		String sep = System.getProperty("file.separator");
+		sb.append(MediaServer.props.getProperty(PMSP_Constants.DATA_DIR_KEY)).append(sep).append("files").append(sep);
+		sb.append("Music").append(sep).append(artist).append(sep).append(album).append(sep).append(fileName);
+		return sb.toString();
 	}
 	
 }
