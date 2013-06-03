@@ -69,7 +69,6 @@ namespace PMSPClient
             //Inform user of authentication process.
             Utilities.WriteNewLine();
             Console.WriteLine("Now attempting authentication on server " + _server.Url + "...");
-            Utilities.WriteNewLine();
 
             //Determine whether or not we're authenticated.
             try
