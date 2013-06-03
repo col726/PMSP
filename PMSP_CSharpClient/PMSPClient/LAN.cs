@@ -36,7 +36,7 @@ namespace PMSPClient
                 Utilities.WriteNewLine();
 
                 //Inform user of ping.
-                Console.Write("Pinging server " + address + "...");
+                Console.Write("Pinging " + address + "...");
 
                 //Instantiate new ping object.
                 Ping ping = new Ping();
@@ -52,6 +52,12 @@ namespace PMSPClient
 
                     //Add current IPv4 address to list.
                     activeIPv4Addresses.Add(ipv4Base + i.ToString());
+                }
+                //Inform user of failed ping.
+                else
+                {
+                    //Success.
+                    Console.Write("Failed.");
                 }
             }
 

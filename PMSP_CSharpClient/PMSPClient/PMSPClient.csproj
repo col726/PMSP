@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Artist.cs" />
+    <Compile Include="Genre.cs" />
     <Compile Include="ListType.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="LAN.cs" />
