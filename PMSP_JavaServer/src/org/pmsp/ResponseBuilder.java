@@ -7,14 +7,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.pmsp.domain.AudioFile;
 import org.pmsp.domain.ListRequest;
-import org.pmsp.domain.MediaFile;
 import org.pmsp.domain.MediaFileListing;
 import org.pmsp.domain.MediaMetadataListing;
 import org.pmsp.domain.Operation;
@@ -62,6 +60,8 @@ public class ResponseBuilder {
 	
 	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException, Exception {
 		PrintStream body = response.getPrintStream();
+		
+		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
 		Retrieval r = new Retrieval();
 		

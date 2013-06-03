@@ -16,12 +16,11 @@ import org.pmsp.domain.Retrieval;
 import org.pmsp.domain.RetrievalRequest;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 public class XmlTester {
 
 	public static void printFileListing() {
-		XStream xs = new XStream(new StaxDriver());
+		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaFileListing.class});
 		
 		MediaFileListing l = new MediaFileListing();
@@ -34,7 +33,7 @@ public class XmlTester {
 
 	
 	public static void printMetadataListing() {
-		XStream xs = new XStream(new StaxDriver());
+		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaMetadataListing.class});
 		
 		MediaMetadataListing mml = new MediaMetadataListing();
@@ -48,7 +47,7 @@ public class XmlTester {
 
 	
 	public static void printRetrieval() {
-		XStream xs = new XStream(new StaxDriver());
+		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Retrieval.class});
 		Retrieval r = new Retrieval();
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
@@ -65,7 +64,7 @@ public class XmlTester {
 	}
 	
 	public static void printListRequest() {
-		XStream xs = new XStream(new StaxDriver());
+		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, ListRequest.class});
 //		xs.alias("Operation", Operation.class);
 //		xs.alias("ListCriteria", ListCriteria.class);
@@ -83,7 +82,7 @@ public class XmlTester {
 	}
 	
 	public static void printRetrieveOperation() {
-		XStream xs = new XStream(new StaxDriver());
+		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, RetrievalRequest.class, RequestType.class});
 //		xs.alias("Operation", Operation.class);
 //		xs.alias("ListCriteria", ListCriteria.class);
@@ -101,7 +100,7 @@ public class XmlTester {
 	}
 	
 	public static void printLoginRequest() {
-		XStream xs = new XStream(new StaxDriver());;
+		XStream xs = new XStream();
 		LoginRequest lr = new LoginRequest();
 		lr.setUsername("test");
 		lr.setPassword("password");

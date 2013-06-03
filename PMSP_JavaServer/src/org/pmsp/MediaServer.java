@@ -34,13 +34,12 @@ import org.simpleframework.transport.connect.Connection;
 import org.simpleframework.transport.connect.SocketConnection;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 public class MediaServer {
 
 	public static Properties props = new Properties();
 	private static final Logger logger = Logger.getLogger(MediaServer.class);
-	private static XStream parser = new XStream(new StaxDriver());;
+	private static XStream parser = new XStream();
 	static {
 		Class[] classes = new Class[] {Operation.class, ListCriteria.class, ListRequest.class, RetrievalRequest.class, 
 				AudioFile.class, MediaFile.class, Retrieval.class, Listing.class, MediaMetadataListing.class, 

@@ -2,11 +2,7 @@ package org.pmsp.test;
 
 import java.io.File;
 
-import org.pmsp.MessageParser;
 import org.pmsp.ResponseBuilder;
-
-
-import org.pmsp.domain.Operation;
 
 public class MessageTestHarness {
 
