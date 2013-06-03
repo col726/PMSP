@@ -157,6 +157,7 @@ namespace PMSPClient
         /// <returns></returns>
         private void HandleException(WebException exception)
         {
+            //If we have a protocol error, check which error status code was returned and set exception message accordingly.
             if (exception.Status == WebExceptionStatus.ProtocolError)
             {
                 var response = exception.Response as HttpWebResponse;

@@ -25,6 +25,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using NAudio.Wave;
 
 namespace PMSPClient
@@ -41,7 +42,7 @@ namespace PMSPClient
         static void Main(string[] args)
         {
             //Display welcome message.
-            Console.WriteLine("Welcome to the PMSP Streaming Audio Player v1.0!");
+            Console.WriteLine("Welcome to the PMSP Audio Player v1.0!");
 
             //Write new line.
             Utilities.WriteNewLine();
@@ -65,43 +66,87 @@ namespace PMSPClient
                     //Auto-discover PMSP server.
                     case "Y":
 
-                        //Set user credentials.
-                        protocol.SetCredentials();
+                        //Instantiate Menu object with valid options.
+                        var autoDiscoveryMenu = new Menu(String.Concat("PMSP auto-discovery assumes PMSP server(s) have IPv4 addresses, ICMP (ping) enabled, and firewalls configured to allow incoming traffic to port ",
+                            protocol.Server.Port, ".  Do you wish to continue?  Enter (y) for yes, (n) for no, or ESC to exit the program:"),
+                            new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
 
-                        //Inform user of time required for auto-discovery, and assumptions.
-                        Console.WriteLine(String.Concat("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  PMSP auto-discovery assumes PMSP server(s) have ping enabled and firewalls configured to allow incoming traffic to port ",
-                                          protocol.Server.Port,
-                                          ".  Please wait..."));
-
-                        //Write new line.
-                        Utilities.WriteNewLine();
-
-                        //Get list of active IPv4 addresses on LAN.
-                        List<string> ips = LAN.GetActiveIp4Addresses();
-
-                        //For each IP in list, attempt PMSP handshake until successful.
-                        foreach (string ip in ips)
+                        //Run.
+                        while (1 == 1)
                         {
-                            //Set server ip.
-                            protocol.Server.Ip = ip;
-
-                            //Attempt handshake
-                            if (protocol.Authenticate())
+                            //Perform specified action.
+                            switch (autoDiscoveryMenu.SelectedOption.ToString())
                             {
-                                break;
+                                //Auto-discover PMSP server.
+                                case "Y":
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Set user credentials.
+                                    protocol.SetCredentials();
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Inform user of progress.
+                                    Console.WriteLine("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  Please wait...");
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Get list of active IPv4 addresses on LAN.
+                                    List<string> ips = LAN.GetActiveIp4Addresses();
+
+                                    //For each IP in list, attempt PMSP handshake until successful.
+                                    foreach (string ip in ips)
+                                    {
+                                        //Set server ip.
+                                        protocol.Server.Ip = ip;
+
+                                        //Attempt handshake
+                                        if (protocol.Authenticate())
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Inform user of auto-discovery result.
+                                    if (protocol.IsAuthenticated)
+                                    {
+                                        Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Unfortunately, we were unable to connect to a PMSP Server on your network.");
+                                    }
+
+                                    //Break.
+                                    break;
+
+                                //Break out of switch.
+                                case "N":
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    break;
+
+                                //Exit program.
+                                case "Escape":
+                                    CleanUp();
+                                    Environment.Exit(0);
+                                    break;
                             }
-                        }
-                        
-                        //Inform user of auto-discovery result.
-                        if (protocol.IsConnected)
-                        {
-                            Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Unfortunately, we were unable to connect to a PMSP Server on your network.");
+
+                            //Break.
+                            break;
                         }
 
+                        //Break;
                         break;
 
                     //Manually specify PMSP server.
@@ -219,51 +264,76 @@ namespace PMSPClient
                                             //Ensure selection is valid before proceeding.
                                             if (track != null)
                                             {
-                                                //Inform user of title and artist.
-                                                Console.WriteLine("Now streaming " + track.Title + " by " + track.Artist.Name + "...");
-
-                                                //Stream track
-                                                track.Stream(protocol);
+                                                //Inform user of track retrieval.
+                                                Console.WriteLine("Retrieving track, please wait...");
 
                                                 //Write new line.
                                                 Utilities.WriteNewLine();
 
-                                                //Instantiate Menu object with valid options.
-                                                Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
+                                                //Stream track
+                                                track.Stream(protocol);
 
-                                                //Run.
-                                                while (1 == 1)
+                                                //Put thread to sleep until the track is loaded.
+                                                while (!track.IsLoaded)
                                                 {
-                                                    //Perform specified action.
-                                                    switch (playbackMenu.SelectedOption.ToString())
-                                                    {
-                                                        //Stop track
-                                                        case "S":
-
-                                                            //Stop track
-                                                            if (track.Audio.PlaybackState == PlaybackState.Playing)
-                                                            {
-                                                                track.Stop();
-                                                            }
-                                                            break;
-
-                                                        //Exit program.
-                                                        case "Escape":
-                                                            
-                                                            //Stop track
-                                                            if (track.Audio.PlaybackState == PlaybackState.Playing)
-                                                            {
-                                                                track.Stop();
-                                                            }
-
-                                                            CleanUp();
-                                                            Environment.Exit(0);
-                                                            break;
-                                                    }
-
-                                                    break;
+                                                    Thread.Sleep(100);
                                                 }
 
+                                                //If the track is playing, inform user.
+                                                if (track.Audio.PlaybackState == PlaybackState.Playing)
+                                                {
+                                                    //Inform user of title and artist.
+                                                    Console.WriteLine("Now streaming " + track.Title + " by " + track.Artist.Name + "...");
+
+                                                    //Write new line.
+                                                    Utilities.WriteNewLine();
+
+                                                    //Instantiate Menu object with valid options.
+                                                    Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
+
+                                                    //Run.
+                                                    while (1 == 1)
+                                                    {
+                                                        //Perform specified action.
+                                                        switch (playbackMenu.SelectedOption.ToString())
+                                                        {
+                                                            //Stop track
+                                                            case "S":
+
+                                                                //Stop track
+                                                                if (track.Audio.PlaybackState == PlaybackState.Playing)
+                                                                {
+                                                                    track.Stop();
+                                                                }
+                                                                break;
+
+                                                            //Exit program.
+                                                            case "Escape":
+
+                                                                //Stop track
+                                                                if (track.Audio.PlaybackState == PlaybackState.Playing)
+                                                                {
+                                                                    track.Stop();
+                                                                }
+
+                                                                CleanUp();
+                                                                Environment.Exit(0);
+                                                                break;
+                                                        }
+
+                                                        break;
+                                                    }
+                                                }
+
+                                                //If the track isn't playing, inform user.
+                                                else
+                                                {
+                                                    //Inform user and append exception.
+                                                    Console.WriteLine("Unfortunately, we were unable to stream the track you selected due to the following reason: " + track.Exception);
+
+                                                    //Write new line.
+                                                    Utilities.WriteNewLine();
+                                                }
                                             }
                                             else
                                             {
@@ -294,7 +364,15 @@ namespace PMSPClient
                                 //Get all tracks.
                                 tracks = Track.GetList(protocol, null);
 
-                                Console.WriteLine(Environment.NewLine + "Here are the available tracks:" + Environment.NewLine);
+                                //New line
+                                Utilities.WriteNewLine();
+
+                                //Inform user of available tracks.
+                                Console.WriteLine("Here are the available tracks:");
+
+                                //Write new line.
+                                Utilities.WriteNewLine();
+
                                 break;
                             
                             //Retrieve file. **TEMP**

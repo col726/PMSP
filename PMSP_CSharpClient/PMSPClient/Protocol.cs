@@ -21,13 +21,11 @@ namespace PMSPClient
         private string _userName;
         private string _password;
         private string _sessionId;
-        private bool _isConnected = false;
         private bool _isAuthenticated = false;
         private string _exception;
 
         //Public properties.
         public Server Server { get { return _server; } }
-        public bool IsConnected { get { return _isConnected; } }
         public bool IsAuthenticated { get { return _isAuthenticated; } }
         public string Exception { get { return _exception; } }
 
@@ -71,7 +69,6 @@ namespace PMSPClient
             //Inform user of authentication process.
             Utilities.WriteNewLine();
             Console.WriteLine("Now attempting authentication on server " + _server.Url + "...");
-            Utilities.WriteNewLine();
 
             //Determine whether or not we're authenticated.
             try
@@ -236,17 +233,14 @@ namespace PMSPClient
             //Define type.
             XmlElement type = _server.RequestData.CreateElement("type");
             type.SetAttribute("class", "RetrievalRequest");
+            type.SetAttribute("mediaType", "Music");
             operation.AppendChild(type);
-
-            //Define PMSP ID parent.
-            XmlElement pmspIds = _server.RequestData.CreateElement("pmspIds");
-            type.AppendChild(pmspIds);
 
             //Define file ID.
             XmlElement id = _server.RequestData.CreateElement("id");
             XmlText idText = _server.RequestData.CreateTextNode(fileId);
             id.AppendChild(idText);
-            pmspIds.AppendChild(id);
+            type.AppendChild(id);
 
             //Get response.
             HttpWebResponse response = _server.GetResponse(_server.RequestData);

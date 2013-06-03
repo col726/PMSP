@@ -19,25 +19,36 @@ namespace PMSPClient
     class Track
     {
         //Private fields.
+        private string _id;
         private byte[] _mp3;
         private string _mp3TempFileName;
         private string _title;
         private Artist _artist;
+        private string _album;
+        private string _genre;
         private WaveOut _audio;
+        private string _exception;
+        private bool _isLoaded;
 
         //Public properties.
         public string Title { get { return _title; } }
         public Artist Artist { get { return _artist; } }
         public WaveOut Audio { get { return _audio; } }
+        public string Exception { get { return _exception; } }
+        public bool IsLoaded { get { return _isLoaded; } set { _isLoaded = value; } }
 
         //Main constructor.
-        public Track(string mp3)
+        public Track(string id, Artist artist, string title, string album, string genre)
         {
             //Set fields.
-            _mp3 = Convert.FromBase64String(mp3);
+            _id = id;
+            _artist = artist;
+            _title = title;
+            _album = album;
+            _genre = genre;
 
             //Populate metadata.
-            PopulateMetadata();
+            //PopulateMetadata();
         }
 
         public void PopulateMetadata()
@@ -66,14 +77,20 @@ namespace PMSPClient
             List<Track> tracks = new List<Track>();
 
             //Drill down through child nodes to get track listings.
+            /*
             XmlNode trackList = protocol.GetList(ListType.Track).ChildNodes[1];
             trackList = trackList.ChildNodes[0];
-
+            
             //Insert tracks.
             foreach (XmlNode track in trackList)
             {
                 //tracks.Add(new Track(""));
             }
+            */
+
+            /*test data*/
+            tracks.Add(new Track("1", artist, "New York", "Prologue", "Folk"));
+            tracks.Add(new Track("2", artist, "Michigan", "Prologue", "Folk"));
 
             //Return list.
             return tracks;
@@ -85,13 +102,29 @@ namespace PMSPClient
         /// <param name="protocol"></param>
         public void Stream(Protocol protocol)
         {
-            //Write mp3 temp file.
-            _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
-            System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
+            //Get audio file.
+            XmlNode audioFile = protocol.GetFile(_id).SelectSingleNode("//Retrieval/mediaFiles/AudioFile");
 
-            //Spin play off in a new thread so we can interact with it from the console (i.e. Pause/Stop/Resume).
-            Thread play = new Thread(Play);
-            play.Start();
+            //If the audio file is valid per checksum comparison, stream track.
+            if (IsValid(audioFile))
+            {
+                //Set mp3 byte array.
+                _mp3 = Convert.FromBase64String(audioFile.SelectSingleNode("data/text()").Value);
+
+                //Write mp3 temp file.
+                _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
+                System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
+
+                //Spin play off in a new thread so we can interact with it from the console (i.e. Pause/Stop/Resume).
+                Thread play = new Thread(Play);
+                play.Start();
+            }
+
+            //Otherwise, set error.
+            else
+            {
+                _exception = "The file is corrupted.  Please select another track.";
+            }
         }
 
         /// <summary>
@@ -123,10 +156,38 @@ namespace PMSPClient
                         _audio.Play();
                         while (_audio.PlaybackState == PlaybackState.Playing)
                         {
+                            _isLoaded = true;
                             Thread.Sleep(100);
                         }
                     }
                 }
+            }
+        }
+
+        private bool IsValid(XmlNode audioFile)
+        {
+            //Get server-provided checksum.
+            string serverCheckSum = audioFile.Attributes["checksum"].Value;
+
+            //Set mp3 string.
+            string mp3 = audioFile.SelectSingleNode("//Retrieval/mediaFiles/AudioFile/data/text()").Value;
+
+            //Generate checksum on mp3 string.
+            ASCIIEncoding encoder = new ASCIIEncoding();
+            byte[] buffer = encoder.GetBytes(mp3);
+            SHA1CryptoServiceProvider cryptoTransformSHA1 = new SHA1CryptoServiceProvider();
+            string clientCheckSum = BitConverter.ToString(cryptoTransformSHA1.ComputeHash(buffer)).Replace("-", "");
+            
+            //If client checksum matches server checksum, return true.
+            if (serverCheckSum.ToLower() == clientCheckSum.ToLower())
+            {
+                return true;
+            }
+
+            //Otherwise, return false.
+            else
+            {
+                return false;
             }
         }
 
@@ -136,6 +197,22 @@ namespace PMSPClient
         public void Stop()
         {
             _audio.Stop();
+        }
+
+        /// <summary>
+        /// Pauses playback of a track in the play state.
+        /// </summary>
+        public void Pause()
+        {
+            _audio.Pause();
+        }
+
+        /// <summary>
+        /// Resumes playback of a track in the paused state.
+        /// </summary>
+        public void Resume()
+        {
+            _audio.Resume();
         }
     }
 }

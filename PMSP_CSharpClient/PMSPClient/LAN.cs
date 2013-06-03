@@ -29,15 +29,27 @@ namespace PMSPClient
             //Ping all possible addresses
             for (int i = 1; i < 255; i++)
             {
+                //Set server address.
+                string address = ipv4Base + i.ToString();
+
+                //Write new line.
+                Utilities.WriteNewLine();
+
+                //Inform user of ping.
+                Console.Write("Pinging server " + address + "...");
+
                 //Instantiate new ping object.
                 Ping ping = new Ping();
 
                 //Send ping request with a 10 second timeout to current IPv4 address.
-                PingReply pingReply = ping.Send(ipv4Base + i.ToString(), 100);
+                PingReply pingReply = ping.Send(address, 100);
 
                 //If we pinged the current IPv4 address, successfully, add to list.
                 if (pingReply.Status == IPStatus.Success)
                 {
+                    //Success.
+                    Console.Write("Success!");
+
                     //Add current IPv4 address to list.
                     activeIPv4Addresses.Add(ipv4Base + i.ToString());
                 }
