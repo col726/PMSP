@@ -6,14 +6,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.security.MessageDigest;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.pmsp.domain.AudioFile;
-import org.pmsp.domain.Listing;
+import org.pmsp.domain.ListRequest;
 import org.pmsp.domain.MediaFile;
+import org.pmsp.domain.MediaFileListing;
+import org.pmsp.domain.MediaMetadataListing;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.Retrieval;
 import org.pmsp.domain.RetrievalRequest;
@@ -26,19 +29,33 @@ public class ResponseBuilder {
 		
 	}
 	
-	public void list(Request request, Response response, Operation operation, String user) throws IOException {
+	public void listFiles(Request request, Response response, Operation operation, String user) throws IOException, SQLException {
 		PrintStream body = response.getPrintStream();
 		
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
-		Listing l = new Listing();
-		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
-		mediaFiles.add(new AudioFile("Artist", "Album", "Title", "Genre", 1, "file1"));
-		mediaFiles.add(new AudioFile("Artist2", "Album2", "Title2", "Genre2", 2, "file2"));
-		l.setMediaFiles(mediaFiles);
+		MediaFileListing mfl = new MediaFileListing();
+		MusicDao dao = new MusicDao();
+		mfl.setMediaFiles(dao.findTracks((ListRequest)operation.getType()));
 		
 		
-		body.println(MediaServer.getXmlParser().toXML(l));			
+		body.println(MediaServer.getXmlParser().toXML(mfl));			
+
+		body.close();
+	}
+	
+	public void listMetadata(Request request, Response response, Operation operation, String user) throws IOException, 
+	SQLException {
+		PrintStream body = response.getPrintStream();
+		
+		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		
+		MediaMetadataListing mml = new MediaMetadataListing();
+		MusicDao dao = new MusicDao();
+		
+		mml.setMetadata(dao.findMetadata((ListRequest)operation.getType()));
+		
+		body.println(MediaServer.getXmlParser().toXML(mml));		
 
 		body.close();
 	}

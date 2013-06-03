@@ -1,0 +1,2 @@
+<?xml version="1.0" ?><Operation><type class="ListRequest" category="Music" listType="Track"><criteria><ListCriteria name="Genre" value="Folk"></ListCriteria></criteria></type></Operation>
+

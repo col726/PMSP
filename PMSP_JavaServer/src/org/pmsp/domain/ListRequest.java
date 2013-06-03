@@ -3,11 +3,14 @@ package org.pmsp.domain;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 @XStreamAlias("ListRequest")
 public class ListRequest extends RequestType {
 
+	@XStreamAsAttribute
 	private String category;
+	@XStreamAsAttribute
 	private String listType;
 	private List<ListCriteria> criteria;
 

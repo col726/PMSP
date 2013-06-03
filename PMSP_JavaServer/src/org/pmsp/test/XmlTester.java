@@ -8,6 +8,8 @@ import org.pmsp.domain.ListRequest;
 import org.pmsp.domain.Listing;
 import org.pmsp.domain.LoginRequest;
 import org.pmsp.domain.MediaFile;
+import org.pmsp.domain.MediaFileListing;
+import org.pmsp.domain.MediaMetadataListing;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.RequestType;
 import org.pmsp.domain.Retrieval;
@@ -18,35 +20,35 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 public class XmlTester {
 
-	public static void printListing() {
+	public static void printFileListing() {
 		XStream xs = new XStream(new StaxDriver());
-//		xs.alias("Listing", Listing.class);
-//		xs.alias("AudioFile", AudioFile.class);
-//		xs.useAttributeFor(AudioFile.class, "pmspId");
-//		xs.useAttributeFor(AudioFile.class, "artist");
-//		xs.useAttributeFor(AudioFile.class, "album");
-//		xs.useAttributeFor(AudioFile.class, "title");
-//		xs.useAttributeFor(AudioFile.class, "genre");
-		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class});
+		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaFileListing.class});
 		
-		Listing l = new Listing();
+		MediaFileListing l = new MediaFileListing();
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
 		mediaFiles.add(new AudioFile("Artist", "Album", "Title", "Genre", 1, "file1"));
 		mediaFiles.add(new AudioFile("Artist2", "Album2", "Title2", "Genre2", 2, "file2"));
 		l.setMediaFiles(mediaFiles);
 		System.out.println(xs.toXML(l));
 	}
+
+	
+	public static void printMetadataListing() {
+		XStream xs = new XStream(new StaxDriver());
+		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaMetadataListing.class});
+		
+		MediaMetadataListing mml = new MediaMetadataListing();
+		ArrayList<String> metadata = new ArrayList<String>();
+		metadata.add("Folk");
+		metadata.add("Rap");
+		metadata.add("Alternative");
+		mml.setMetadata(metadata);
+		System.out.println(xs.toXML(mml));
+	}
+
 	
 	public static void printRetrieval() {
 		XStream xs = new XStream(new StaxDriver());
-//		xs.alias("Retrieval", Retrieval.class);
-//		xs.alias("AudioFile", AudioFile.class);
-//		xs.useAttributeFor(AudioFile.class, "pmspId");
-//		xs.useAttributeFor(AudioFile.class, "artist");
-//		xs.useAttributeFor(AudioFile.class, "album");
-//		xs.useAttributeFor(AudioFile.class, "title");
-//		xs.useAttributeFor(AudioFile.class, "genre");
-//		xs.useAttributeFor(AudioFile.class, "checksum");
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Retrieval.class});
 		Retrieval r = new Retrieval();
 		ArrayList<MediaFile> mediaFiles = new ArrayList<MediaFile>();
@@ -113,8 +115,10 @@ public class XmlTester {
 		
 		System.out.println("ListRequest:");
 		printListRequest();
-		System.out.println("\nListResponse:");
-		printListing();
+		System.out.println("\nMetaDataListResponse:");
+		printMetadataListing();
+		System.out.println("\nFileListResponse:");
+		printFileListing();
 		System.out.println("\nRetrieveRequest:");
 		printRetrieveOperation();
 		System.out.println("\nRetrieveResponse:");

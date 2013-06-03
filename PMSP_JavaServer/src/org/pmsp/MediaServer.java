@@ -22,6 +22,8 @@ import org.pmsp.domain.ListCriteria;
 import org.pmsp.domain.ListRequest;
 import org.pmsp.domain.Listing;
 import org.pmsp.domain.MediaFile;
+import org.pmsp.domain.MediaFileListing;
+import org.pmsp.domain.MediaMetadataListing;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.Retrieval;
 import org.pmsp.domain.RetrievalRequest;
@@ -41,7 +43,8 @@ public class MediaServer {
 	private static XStream parser = new XStream(new StaxDriver());;
 	static {
 		Class[] classes = new Class[] {Operation.class, ListCriteria.class, ListRequest.class, RetrievalRequest.class, 
-				AudioFile.class, MediaFile.class, Retrieval.class, Listing.class};
+				AudioFile.class, MediaFile.class, Retrieval.class, Listing.class, MediaMetadataListing.class, 
+				MediaFileListing.class};
 		parser.processAnnotations(classes);
 	}
 	

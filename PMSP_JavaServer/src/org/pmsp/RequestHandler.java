@@ -77,7 +77,13 @@ public class RequestHandler implements Container {
 
 				ResponseBuilder rb = new ResponseBuilder();
 				if (op.getType() instanceof ListRequest) {
-					rb.list(request, response, op, user);
+					if (((ListRequest)op.getType()).getListType().equals("Track")) {
+						rb.listFiles(request, response, op, user);	
+					}
+					else {
+						rb.listMetadata(request, response, op, user);
+					}
+					
 				}
 				else if (op.getType() instanceof RetrievalRequest) {
 					rb.retrieval(request, response, op, user);
