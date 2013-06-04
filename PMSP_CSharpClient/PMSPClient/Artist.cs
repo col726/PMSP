@@ -31,17 +31,14 @@ namespace PMSPClient
             //Instantiate artist list.
             List<Artist> artists = new List<Artist>();
 
-            //Insert artists.
-            foreach(XmlNode artist in protocol.GetList(ListType.Artist).ChildNodes)
-            {
-                /*
-                 * Add artists to list here.
-                 */
-            }
+            //Drill down through child nodes to get artist listings.
+            XmlNode artistList = protocol.GetMetadataList(ListType.Artist).SelectSingleNode("//MetadataListing");
 
-            /**********TEST DATA ONLY******************/
-            artists.Add(new Artist("The Milk Carton Kids"));
-            /******************************************/
+            //Insert artists.
+            foreach (XmlNode artist in artistList.ChildNodes)
+            {
+                artists.Add(new Artist(artist.InnerText));
+            }
 
             //Return list.
             return artists;

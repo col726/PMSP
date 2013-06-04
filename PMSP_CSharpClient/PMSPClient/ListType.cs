@@ -8,6 +8,7 @@ namespace PMSPClient
     public enum ListType
     {
         Artist,
-        Track
+        Track,
+        Genre
     }
 }

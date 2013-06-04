@@ -31,6 +31,7 @@ namespace PMSPClient
         private bool _isLoaded;
 
         //Public properties.
+        public string Id { get { return _id; } }
         public string Title { get { return _title; } }
         public Artist Artist { get { return _artist; } }
         public WaveOut Audio { get { return _audio; } }
@@ -51,6 +52,9 @@ namespace PMSPClient
             //PopulateMetadata();
         }
 
+        /// <summary>
+        /// Populates track metadata from ID3 tags.
+        /// </summary>
         public void PopulateMetadata()
         {
             //Write mp3 temp file.
@@ -71,26 +75,23 @@ namespace PMSPClient
         /// </summary>
         /// <param name="artist">Optional artist parameter used to specify if only the tracks from a specific artists should be returned.</param>
         /// <returns></returns>
-        public static List<Track> GetList(Protocol protocol, Artist artist)
+        public static List<Track> GetList(Protocol protocol, ListType criteriaType, string criteriaValue)
         {
             //Instantiate track list.
             List<Track> tracks = new List<Track>();
 
             //Drill down through child nodes to get track listings.
-            /*
-            XmlNode trackList = protocol.GetList(ListType.Track).ChildNodes[1];
-            trackList = trackList.ChildNodes[0];
+            XmlNode trackList = protocol.GetMediaFileList(criteriaType, criteriaValue).SelectSingleNode("//MediaFileListing").ChildNodes[0];
             
             //Insert tracks.
-            foreach (XmlNode track in trackList)
+            foreach (XmlNode track in trackList.ChildNodes)
             {
-                //tracks.Add(new Track(""));
+                tracks.Add(new Track(   track.Attributes["pmspId"].Value,
+                                        new Artist(track.Attributes["artist"].Value),
+                                        track.Attributes["title"].Value,
+                                        track.Attributes["album"].Value,
+                                        track.Attributes["genre"].Value));
             }
-            */
-
-            /*test data*/
-            tracks.Add(new Track("1", artist, "New York", "Prologue", "Folk"));
-            tracks.Add(new Track("2", artist, "Michigan", "Prologue", "Folk"));
 
             //Return list.
             return tracks;

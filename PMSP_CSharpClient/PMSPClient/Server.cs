@@ -27,7 +27,7 @@ namespace PMSPClient
 
         //Public properties.
         public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
-        public string Url { get { return _url; } set { _url = value; } }
+        public string Url { get { return _url; } set { _url = "http://" + value + ":" + _port; } }
         public string Port { get { return _port; } }
         public HttpWebRequest Request { get { return _request; } }
         public XmlDocument RequestData { get { return _requestData; } }

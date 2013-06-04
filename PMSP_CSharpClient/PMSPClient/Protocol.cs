@@ -50,7 +50,7 @@ namespace PMSPClient
             //Get password.
             Console.WriteLine("Please enter your Password: ");
             Char temp;
-            String password = "";
+            _password = "";
             do
             {
                 temp = Console.ReadKey().KeyChar;
@@ -68,7 +68,7 @@ namespace PMSPClient
         {
             //Inform user of authentication process.
             Utilities.WriteNewLine();
-            Console.WriteLine("Now attempting authentication on server " + _server.Url + "...");
+            Console.Write("Now attempting authentication on server " + _server.Url + "...");
 
             //Determine whether or not we're authenticated.
             try
@@ -82,12 +82,16 @@ namespace PMSPClient
                 //If the response is null, there was an error.  Set exception message.
                 if (response == null)
                 {
+                    Console.Write("Failed.");
                     _exception = _server.Exception;
                 }
 
                 //Otherwise, set cookie value for subsequent requests.
                 else
                 {
+                    //Inform user.
+                    Console.Write("Success!");
+
                     //Set cookie
                     _sessionId = response.Headers["Set-Cookie"];
 
@@ -109,91 +113,101 @@ namespace PMSPClient
         /// </summary>
         /// <param name="listType"></param>
         /// <returns></returns>
-        public XmlDocument GetList(ListType xmllistType)
+        public XmlDocument GetMetadataList(ListType xmllistType)
         {
             //Create new request.
             _server.CreateRequest(_sessionId);
+
+            //Define operation.
+            XmlElement operation = _server.RequestData.CreateElement("Operation");
+            _server.RequestData.AppendChild(operation);
+
+            //Define type.
+            XmlElement type = _server.RequestData.CreateElement("type");
+            operation.AppendChild(type);
+
+            //Define criteria.
+            XmlElement criteria = _server.RequestData.CreateElement("criteria");
+            type.AppendChild(criteria);
 
             //Get list of tracks or artists.
             switch (xmllistType)
             {
                 case ListType.Artist:
-                    //get artists
-                    break;
 
-                case ListType.Track:
-            
-                    //Define operation.
-                    XmlElement operation = _server.RequestData.CreateElement("Operation");
-                    _server.RequestData.AppendChild(operation);
-            
-                    //Define type.
-                    XmlElement type = _server.RequestData.CreateElement("type");
+                    //Set attributes.
                     type.SetAttribute("class", "ListRequest");
-                    operation.AppendChild(type);
-
-                    //Define category.
-                    XmlElement category = _server.RequestData.CreateElement("category");
-                    XmlText categoryText = _server.RequestData.CreateTextNode("Music");
-                    category.AppendChild(categoryText);
-                    type.AppendChild(category);
-
-                    //Define list type.
-                    XmlElement listType = _server.RequestData.CreateElement("listType");
-                    XmlText listTypeText = _server.RequestData.CreateTextNode("Track");
-                    listType.AppendChild(listTypeText);
-                    type.AppendChild(listType);
-
-                    //Define criteria.
-                    XmlElement criteria = _server.RequestData.CreateElement("criteria");
-                    type.AppendChild(criteria);
-
-                    //Define criteria 1st ListCriteria
-                    XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
-                    criteria.AppendChild(listCriteria);
-
-                    //Define list criteria type.
-                    XmlElement listCriteriaType = _server.RequestData.CreateElement("type");
-                    XmlText listCriteriaTypeText = _server.RequestData.CreateTextNode("Music");
-                    listCriteriaType.AppendChild(listCriteriaTypeText);
-                    listCriteria.AppendChild(listCriteriaType);
-
-                    //Define list criteria type.
-                    XmlElement listCriteriaName = _server.RequestData.CreateElement("name");
-                    XmlText listCriteriaNameText = _server.RequestData.CreateTextNode("Artist");
-                    listCriteriaName.AppendChild(listCriteriaNameText);
-                    listCriteria.AppendChild(listCriteriaName);
-
-                    //Define list criteria type.
-                    XmlElement listCriteriaValue = _server.RequestData.CreateElement("value");
-                    XmlText listCriteriaValueText = _server.RequestData.CreateTextNode("Smith");
-                    listCriteriaValue.AppendChild(listCriteriaValueText);
-                    listCriteria.AppendChild(listCriteriaValue);
-
-                    //Define criteria 2nd ListCriteria
-                    listCriteria = _server.RequestData.CreateElement("ListCriteria");
-                    criteria.AppendChild(listCriteria);
-
-                    //Define list criteria type.
-                    listCriteriaType = _server.RequestData.CreateElement("type");
-                    listCriteriaTypeText = _server.RequestData.CreateTextNode("Music");
-                    listCriteriaType.AppendChild(listCriteriaTypeText);
-                    listCriteria.AppendChild(listCriteriaType);
-
-                    //Define list criteria type.
-                    listCriteriaName = _server.RequestData.CreateElement("name");
-                    listCriteriaNameText = _server.RequestData.CreateTextNode("Artist");
-                    listCriteriaName.AppendChild(listCriteriaNameText);
-                    listCriteria.AppendChild(listCriteriaName);
-
-                    //Define list criteria type.
-                    listCriteriaValue = _server.RequestData.CreateElement("value");
-                    listCriteriaValueText = _server.RequestData.CreateTextNode("Green");
-                    listCriteriaValue.AppendChild(listCriteriaValueText);
-                    listCriteria.AppendChild(listCriteriaValue);
+                    type.SetAttribute("category", "Music");
+                    type.SetAttribute("listType", "Artist");
 
                     //Break.
                     break;
+
+                case ListType.Genre:
+
+                    //Set attributes.
+                    type.SetAttribute("class", "ListRequest");
+                    type.SetAttribute("category", "Music");
+                    type.SetAttribute("listType", "Genre");
+
+                    //Break.
+                    break;
+            }
+
+            //Get response.
+            HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+            //If the response is null, there was an error.  Set exception message.
+            if (response == null)
+            {
+                _exception = _server.Exception;
+            }
+
+            //Otherwise, load xml from response.
+            else
+            {
+                //Load xml from response.
+                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+            }
+
+            //Return list.
+            return _server.Response;
+        }
+
+        /// <summary>
+        /// STATEFUL: Gets a list of tracks based on the input parameter.
+        /// </summary>
+        /// <param name="listType"></param>
+        /// <returns></returns>
+        public XmlDocument GetMediaFileList(ListType criteriaType, string criteriaValue)
+        {
+            //Create new request.
+            _server.CreateRequest(_sessionId);
+
+            //Define operation.
+            XmlElement operation = _server.RequestData.CreateElement("Operation");
+            _server.RequestData.AppendChild(operation);
+
+            //Define type.
+            XmlElement type = _server.RequestData.CreateElement("type");
+            operation.AppendChild(type);
+
+            //Define criteria.
+            XmlElement criteria = _server.RequestData.CreateElement("criteria");
+            type.AppendChild(criteria);
+
+            //Set attributes.
+            type.SetAttribute("class", "ListRequest");
+            type.SetAttribute("category", "Music");
+            type.SetAttribute("listType", "Track");
+
+            //If we have list criteria, specify it.
+            if (!String.IsNullOrEmpty(criteriaValue))
+            {
+                XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
+                listCriteria.SetAttribute("name", criteriaType.ToString());
+                listCriteria.SetAttribute("value", criteriaValue);
+                criteria.AppendChild(listCriteria);
             }
 
             //Get response.
