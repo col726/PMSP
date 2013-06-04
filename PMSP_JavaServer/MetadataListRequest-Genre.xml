@@ -1,2 +1,7 @@
-<?xml version="1.0" ?><Operation><type class="ListRequest" category="Music" listType="Genre"><criteria></criteria></type></Operation>
+<Operation>
+  <type class="MetadataListRequest" category="Music" listType="Genre">
+    <criteria>
+    </criteria>
+  </type>
+</Operation>
 

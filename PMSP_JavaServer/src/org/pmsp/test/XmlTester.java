@@ -4,12 +4,13 @@ import java.util.ArrayList;
 
 import org.pmsp.domain.AudioFile;
 import org.pmsp.domain.ListCriteria;
-import org.pmsp.domain.ListRequest;
+import org.pmsp.domain.FileListRequest;
 import org.pmsp.domain.Listing;
 import org.pmsp.domain.LoginRequest;
 import org.pmsp.domain.MediaFile;
 import org.pmsp.domain.MediaFileListing;
 import org.pmsp.domain.MediaMetadataListing;
+import org.pmsp.domain.MetadataListRequest;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.RequestType;
 import org.pmsp.domain.Retrieval;
@@ -19,6 +20,15 @@ import com.thoughtworks.xstream.XStream;
 
 public class XmlTester {
 
+	public static void printLoginRequest() {
+		XStream xs = new XStream();
+		xs.processAnnotations(new Class[] {Operation.class, LoginRequest.class});
+		
+		Operation op = new Operation();
+		op.setType(new LoginRequest());
+		
+		System.out.println(xs.toXML(op));
+	}
 	public static void printFileListing() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaFileListing.class});
@@ -63,21 +73,38 @@ public class XmlTester {
 		System.out.println(xs.toXML(r));
 	}
 	
-	public static void printListRequest() {
+	public static void printFileListRequest() {
 		XStream xs = new XStream();
-		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, ListRequest.class});
+		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, FileListRequest.class});
 //		xs.alias("Operation", Operation.class);
 //		xs.alias("ListCriteria", ListCriteria.class);
 //		xs.alias("ListRequest", ListRequest.class);
-		ListRequest lir = new ListRequest();
+		FileListRequest lir = new FileListRequest();
 		lir.setCategory("Music");
-		lir.setListType("Track");
 		ArrayList<ListCriteria> criteria = new ArrayList<ListCriteria>();
 		criteria.add(new ListCriteria("Artist", "Smith"));
 		criteria.add(new ListCriteria("Artist", "Green"));
 		lir.setCriteria(criteria);
 		Operation op = new Operation();
 		op.setType(lir);
+		System.out.println(xs.toXML(op));
+	}
+	
+	public static void printMetadataListRequest() {
+		XStream xs = new XStream();
+		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, MetadataListRequest.class});
+//		xs.alias("Operation", Operation.class);
+//		xs.alias("ListCriteria", ListCriteria.class);
+//		xs.alias("ListRequest", ListRequest.class);
+		MetadataListRequest mlr = new MetadataListRequest();
+		mlr.setCategory("Music");
+		mlr.setListType("Album");
+		ArrayList<ListCriteria> criteria = new ArrayList<ListCriteria>();
+		criteria.add(new ListCriteria("Artist", "Smith"));
+		criteria.add(new ListCriteria("Artist", "Green"));
+		mlr.setCriteria(criteria);
+		Operation op = new Operation();
+		op.setType(mlr);
 		System.out.println(xs.toXML(op));
 	}
 	
@@ -99,29 +126,27 @@ public class XmlTester {
 		System.out.println(xs.toXML(op));
 	}
 	
-	public static void printLoginRequest() {
-		XStream xs = new XStream();
-		LoginRequest lr = new LoginRequest();
-		lr.setUsername("test");
-		lr.setPassword("password");
-		
-		System.out.println(xs.toXML(lr));
-	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		
-		System.out.println("ListRequest:");
-		printListRequest();
-		System.out.println("\nMetaDataListResponse:");
-		printMetadataListing();
+		System.out.println("FileListRequest:");
+		printFileListRequest();
 		System.out.println("\nFileListResponse:");
 		printFileListing();
+		
+		System.out.println("\nMetaDataListRequest:");
+		printMetadataListRequest();
+		System.out.println("\nMetaDataListResponse:");
+		printMetadataListing();
+		
 		System.out.println("\nRetrieveRequest:");
 		printRetrieveOperation();
 		System.out.println("\nRetrieveResponse:");
 		printRetrieval();
+		System.out.println("\nLoginRequest:");
+		printLoginRequest();
 		
 		
 

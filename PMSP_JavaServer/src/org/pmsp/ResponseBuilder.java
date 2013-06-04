@@ -1,5 +1,10 @@
 package org.pmsp;
 
+import static org.pmsp.PMSP_Constants.COOKIE_STATE_KEY;
+import static org.pmsp.PMSP_Constants.STATE_IDLE;
+import static org.pmsp.PMSP_Constants.STATE_WAIT_FOR_FILE_CHOICE;
+import static org.pmsp.PMSP_Constants.STATE_WAIT_FOR_LIST_CHOICE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,9 +17,10 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.pmsp.domain.AudioFile;
-import org.pmsp.domain.ListRequest;
+import org.pmsp.domain.FileListRequest;
 import org.pmsp.domain.MediaFileListing;
 import org.pmsp.domain.MediaMetadataListing;
+import org.pmsp.domain.MetadataListRequest;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.Retrieval;
 import org.pmsp.domain.RetrievalRequest;
@@ -23,18 +29,16 @@ import org.simpleframework.http.Response;
 
 public class ResponseBuilder {
 
-	public void login(Request request, Response response, Operation operation, String user) {
-		
-	}
 	
 	public void listFiles(Request request, Response response, Operation operation, String user) throws IOException, SQLException {
 		PrintStream body = response.getPrintStream();
+		response.setCookie(COOKIE_STATE_KEY, STATE_WAIT_FOR_FILE_CHOICE);
 		
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
 		MediaFileListing mfl = new MediaFileListing();
 		MusicDao dao = new MusicDao();
-		mfl.setMediaFiles(dao.findTracks((ListRequest)operation.getType()));
+		mfl.setMediaFiles(dao.findTracks((FileListRequest)operation.getType()));
 		
 		
 		body.println(MediaServer.getXmlParser().toXML(mfl));			
@@ -45,22 +49,24 @@ public class ResponseBuilder {
 	public void listMetadata(Request request, Response response, Operation operation, String user) throws IOException, 
 	SQLException {
 		PrintStream body = response.getPrintStream();
+		response.setCookie(COOKIE_STATE_KEY, STATE_WAIT_FOR_LIST_CHOICE);
 		
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
 		MediaMetadataListing mml = new MediaMetadataListing();
 		MusicDao dao = new MusicDao();
 		
-		mml.setMetadata(dao.findMetadata((ListRequest)operation.getType()));
+		mml.setMetadata(dao.findMetadata((MetadataListRequest)operation.getType()));
 		
 		body.println(MediaServer.getXmlParser().toXML(mml));		
 
+		
 		body.close();
 	}
 	
 	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException, Exception {
 		PrintStream body = response.getPrintStream();
-		
+		response.setCookie(COOKIE_STATE_KEY, PMSP_Constants.STATE_IDLE);
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
 		Retrieval r = new Retrieval();
@@ -76,6 +82,28 @@ public class ResponseBuilder {
 		body.println(MediaServer.getXmlParser().toXML(r));	
 
 		body.close();
+	}
+	
+	public String login(Request request, Response response, Operation operation) throws IOException {
+
+		//do authentication
+		Authenticator auth = new Authenticator();
+		String user = auth.authenticate(request.getValue("Authorization"));
+		if (user != null) {
+//			sessions.put(user, user);
+			response.setCookie(PMSP_Constants.COOKIE_SESSION_KEY, user);
+			response.setCookie(COOKIE_STATE_KEY, STATE_IDLE);
+			response.close();
+		}	
+		return user;
+	}
+	
+	public void logoff(Request request, Response response, Operation operation, String user) throws IOException {
+
+		response.setCookie(PMSP_Constants.COOKIE_SESSION_KEY, "");
+		response.setCookie(COOKIE_STATE_KEY, PMSP_Constants.STATE_WAIT_FOR_LOGIN);
+		response.close();
+		
 	}
 	
 	public byte[] createChecksum(String fileName) throws Exception

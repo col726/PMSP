@@ -2,6 +2,7 @@ package org.pmsp;
 
 import static org.pmsp.PMSP_Constants.DATA_DIR_KEY;
 import static org.pmsp.PMSP_Constants.IMPLEMENTATION_KEY;
+import static org.pmsp.PMSP_Constants.LISTEN_HOST_KEY;
 import static org.pmsp.PMSP_Constants.LISTEN_PORT_KEY;
 import static org.pmsp.PMSP_Constants.PROPERTIES_FILE_KEY;
 
@@ -18,12 +19,15 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.pmsp.domain.AudioFile;
+import org.pmsp.domain.FileListRequest;
 import org.pmsp.domain.ListCriteria;
-import org.pmsp.domain.ListRequest;
 import org.pmsp.domain.Listing;
+import org.pmsp.domain.LoginRequest;
+import org.pmsp.domain.LogoffRequest;
 import org.pmsp.domain.MediaFile;
 import org.pmsp.domain.MediaFileListing;
 import org.pmsp.domain.MediaMetadataListing;
+import org.pmsp.domain.MetadataListRequest;
 import org.pmsp.domain.Operation;
 import org.pmsp.domain.Retrieval;
 import org.pmsp.domain.RetrievalRequest;
@@ -40,10 +44,14 @@ public class MediaServer {
 	public static Properties props = new Properties();
 	private static final Logger logger = Logger.getLogger(MediaServer.class);
 	private static XStream parser = new XStream();
+	protected static Server server;
+	protected static Connection connection; 
+	
+	
 	static {
-		Class[] classes = new Class[] {Operation.class, ListCriteria.class, ListRequest.class, RetrievalRequest.class, 
+		Class[] classes = new Class[] {Operation.class, ListCriteria.class, FileListRequest.class, RetrievalRequest.class, 
 				AudioFile.class, MediaFile.class, Retrieval.class, Listing.class, MediaMetadataListing.class, 
-				MediaFileListing.class};
+				MediaFileListing.class, MetadataListRequest.class, LoginRequest.class, LogoffRequest.class};
 		parser.processAnnotations(classes);
 	}
 	
@@ -92,10 +100,40 @@ public class MediaServer {
 		
 		String connectionURL = "jdbc:derby:" + dbName + ";create=true";
 	    return(DriverManager.getConnection(connectionURL));
-	}
+	}	
 	
 	public static XStream getXmlParser() {
 		return parser;
+	}
+	
+	private static class ShutdownHook {
+		public void attachShutDownHook() {
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					//close the socket connection
+					if (connection != null) {
+						try {
+							connection.close();
+						} catch (Throwable t) {
+						}
+					}
+
+					//shut down the http server
+					if (server != null) {
+						try {
+							server.stop();
+						} catch (Throwable t) {
+						}
+					}
+					
+					//shut down the db server
+					try {
+						DriverManager.getConnection("jdbc:derby:;shutdown=true");
+					} catch (Throwable t) {
+					}
+				}
+			});
+		}
 	}
 	
 	public static void main(String[] list) throws Exception {
@@ -127,14 +165,18 @@ public class MediaServer {
 			System.exit(2);
 		}
 		
+		ShutdownHook hook = new ShutdownHook();
+		hook.attachShutDownHook();
 		
 		Container container = (Container) Class.forName(props.getProperty(IMPLEMENTATION_KEY)).newInstance();
-		Server server = new ContainerServer(container);
-		Connection connection = new SocketConnection(server);
-		
-		SocketAddress address = new InetSocketAddress(Integer.parseInt(props.getProperty(LISTEN_PORT_KEY)));
+		server = new ContainerServer(container);
+		connection = new SocketConnection(server);
+		String host = props.getProperty(LISTEN_HOST_KEY, "0.0.0.0");
+		int port = Integer.parseInt(props.getProperty(LISTEN_PORT_KEY, "31415"));
+		SocketAddress address = new InetSocketAddress(host, port);
 
 		connection.connect(address);
+		
 		
 	}
 }

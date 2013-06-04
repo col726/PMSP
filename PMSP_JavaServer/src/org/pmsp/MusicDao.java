@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.pmsp.domain.AudioFile;
-import org.pmsp.domain.ListRequest;
+import org.pmsp.domain.FileListRequest;
+import org.pmsp.domain.MetadataListRequest;
 
 public class MusicDao {
 
@@ -51,7 +52,7 @@ public class MusicDao {
 		return list;
 	}
 	
-	public List<String> findMetadata(ListRequest criteria) throws SQLException {
+	public List<String> findMetadata(MetadataListRequest criteria) throws SQLException {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -87,7 +88,7 @@ public class MusicDao {
 		return list;
 	}
 	
-	public List<AudioFile> findTracks(ListRequest criteria) throws SQLException {
+	public List<AudioFile> findTracks(FileListRequest criteria) throws SQLException {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
