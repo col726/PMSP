@@ -1,5 +1,17 @@
 package org.pmsp;
 
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+
+/**
+ * Constants class. 
+ */
 public class PMSP_Constants {
 
 public static final String PROPERTIES_FILE_KEY = "pmsp.properties";
@@ -20,7 +32,7 @@ public static final String DB_DRIVER_CLASS = "org.apache.derby.jdbc.EmbeddedDriv
 
 public static final String STATE_WAIT_FOR_LOGIN = "wait.login";
 public static final String STATE_IDLE = "idle";
-public static final String STATE_WAIT_FOR_LIST_CHOICE = "wait.list.coice";
+public static final String STATE_WAIT_FOR_LIST_CHOICE = "wait.list.choice";
 public static final String STATE_WAIT_FOR_FILE_CHOICE = "wait.file.choice";
 
 public static final String MESSAGE_LOGIN = "";

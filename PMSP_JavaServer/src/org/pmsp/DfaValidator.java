@@ -13,19 +13,34 @@ import org.pmsp.domain.MetadataListRequest;
 import org.pmsp.domain.RequestType;
 import org.pmsp.domain.RetrievalRequest;
 
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+
 /**
+ * STATEFUL
  * This defines valid state transitions. Might want to implement this
  * differently in the future, but it supports the protocol's defined DFA. Thought about 
  * representing this via config file or db table, but this is probably
  * not the sort of thing that we would change without corresponding code changes.
- * @author jkrupka
- *
  */
 public class DfaValidator {
 
+	/**
+	 * Map of state to list of allowable messages for that state.  "Messages" are the class name of that message 
+	 * the key of the map is the state name in the cookie.
+	 */
 	private HashMap<String, List<String>> dfa = new HashMap<String, List<String>>();
 
 
+	/**
+	 * Default constructor.  Loads the in memory representation of the DFA states and transitions
+	 */
 	public DfaValidator() {
 		ArrayList<String> transitions = new ArrayList<String>();
 		transitions.add(LoginRequest.class.getCanonicalName());
@@ -53,9 +68,13 @@ public class DfaValidator {
 //		dfa.put(STATE_GETTING_FILE, transitions);
 	}
 	
-	
+	/**
+	 * verifies this message type is valid for the source state
+	 * @param fromState - this corresponds to the state name in the cookie
+	 * @param type - The request object
+	 * @return true if it's a valid transition or false if no
+	 */
 	public boolean checkTransition(String fromState, RequestType type) {
-		
 		return dfa.get(fromState) != null && dfa.get(fromState).contains(type.getClass().getCanonicalName()); 
 	}
 

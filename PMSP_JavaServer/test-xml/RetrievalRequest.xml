@@ -1,6 +1,5 @@
 <Operation>
   <type class="RetrievalRequest" mediaType="Music">
     <id>1</id>
-    <id>2</id>
   </type>
 </Operation>
