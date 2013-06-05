@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.codec.binary.Base64;
 
-/*=========================Group/Course Information+========================
+/*=========================Group/Course Information=========================
  * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
  * CS 544
  * Spring 2013
