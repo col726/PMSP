@@ -10,13 +10,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.derby.iapi.services.io.FileUtil;
 import org.pmsp.domain.FileListRequest;
 import org.pmsp.domain.MediaFile;
 import org.pmsp.domain.MediaFileListing;
@@ -202,7 +200,8 @@ public class ResponseBuilder {
 	
 
 	/**
-	 * Create a byte array from the provided file
+	 * Create a byte array from the provided file.
+	 * Basic code taken from example found at http://stackoverflow.com/a/858991
 	 * @param file
 	 * @return
 	 * @throws IOException

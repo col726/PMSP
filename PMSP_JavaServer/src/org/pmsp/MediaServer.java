@@ -39,7 +39,7 @@ import org.simpleframework.transport.connect.SocketConnection;
 
 import com.thoughtworks.xstream.XStream;
 
-/*=========================Group/Course Information+========================
+/*=========================Group/Course Information=========================
  * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
  * CS 544
  * Spring 2013
@@ -61,6 +61,7 @@ public class MediaServer {
 	// Xstream docs recommend xml configuration is done once and done ahead of time
 	// this processes all the annotations so xstream knows how to load/build our xml docs
 	static {
+		@SuppressWarnings("rawtypes")
 		Class[] classes = new Class[] {Operation.class, ListCriteria.class, FileListRequest.class, RetrievalRequest.class, 
 				AudioFile.class, MediaFile.class, Retrieval.class, Listing.class, MediaMetadataListing.class, 
 				MediaFileListing.class, MetadataListRequest.class, LoginRequest.class, LogoffRequest.class};

@@ -18,8 +18,23 @@ import org.pmsp.domain.RetrievalRequest;
 
 import com.thoughtworks.xstream.XStream;
 
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/**
+ * Xml Building test class.  Not used in actual application. 
+ * Just creates domain objects and prints them out for verifying correct structure.
+ */
 public class XmlTester {
 
+	/**
+	 * Print LoginRequest xml
+	 */
 	public static void printLoginRequest() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, LoginRequest.class});
@@ -29,6 +44,10 @@ public class XmlTester {
 		
 		System.out.println(xs.toXML(op));
 	}
+	
+	/**
+	 * Print FileListing response xml
+	 */
 	public static void printFileListing() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaFileListing.class});
@@ -41,7 +60,9 @@ public class XmlTester {
 		System.out.println(xs.toXML(l));
 	}
 
-	
+	/**
+	 * Print Metadata listing xml
+	 */
 	public static void printMetadataListing() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Listing.class, MediaMetadataListing.class});
@@ -55,7 +76,9 @@ public class XmlTester {
 		System.out.println(xs.toXML(mml));
 	}
 
-	
+	/**
+	 * Print Retrieval response xml
+	 */
 	public static void printRetrieval() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {AudioFile.class, MediaFile.class, Retrieval.class});
@@ -73,12 +96,12 @@ public class XmlTester {
 		System.out.println(xs.toXML(r));
 	}
 	
+	/**
+	 * Print FileListing Request xml
+	 */
 	public static void printFileListRequest() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, FileListRequest.class});
-//		xs.alias("Operation", Operation.class);
-//		xs.alias("ListCriteria", ListCriteria.class);
-//		xs.alias("ListRequest", ListRequest.class);
 		FileListRequest lir = new FileListRequest();
 		lir.setCategory("Music");
 		ArrayList<ListCriteria> criteria = new ArrayList<ListCriteria>();
@@ -90,12 +113,12 @@ public class XmlTester {
 		System.out.println(xs.toXML(op));
 	}
 	
+	/**
+	 * Print Metadatalist Request xml
+	 */
 	public static void printMetadataListRequest() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, MetadataListRequest.class});
-//		xs.alias("Operation", Operation.class);
-//		xs.alias("ListCriteria", ListCriteria.class);
-//		xs.alias("ListRequest", ListRequest.class);
 		MetadataListRequest mlr = new MetadataListRequest();
 		mlr.setCategory("Music");
 		mlr.setListType("Album");
@@ -108,13 +131,12 @@ public class XmlTester {
 		System.out.println(xs.toXML(op));
 	}
 	
+	/**
+	 * Print Retrieval Request xml
+	 */
 	public static void printRetrieveOperation() {
 		XStream xs = new XStream();
 		xs.processAnnotations(new Class[] {Operation.class, RetrievalRequest.class, RequestType.class});
-//		xs.alias("Operation", Operation.class);
-//		xs.alias("ListCriteria", ListCriteria.class);
-//		xs.alias("ListRequest", ListRequest.class);
-//		xs.alias("RetrievalRequest", RetrievalRequest.class);
 
 		RetrievalRequest rr = new RetrievalRequest();
 		

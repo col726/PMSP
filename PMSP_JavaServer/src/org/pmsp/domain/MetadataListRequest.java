@@ -5,12 +5,29 @@ import java.util.List;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/**
+ * Request object for getting a list of metadata
+ */
 @XStreamAlias("MetadataListRequest")
 public class MetadataListRequest extends RequestType {
 
+	/**
+	 * media type
+	 */
 	@XStreamAsAttribute
 	private String category;
 	
+	/**
+	 * What kind of metadata
+	 */
 	@XStreamAsAttribute
 	private String listType;
 	
