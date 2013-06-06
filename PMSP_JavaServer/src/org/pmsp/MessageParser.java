@@ -1,49 +1,31 @@
 package org.pmsp;
-import java.io.File;
-
 import org.pmsp.domain.Operation;
 
-import com.thoughtworks.xstream.XStream;
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
 
+/**
+ * This class is responsible for converting the xml into our object.  Because of our object structure and the use of
+ * xstream, there's not much here.  But in future version there may be more here.
+ *
+ */
 public class MessageParser {
 	
-
+/**
+ * Convert the xml to one of our Operation objects
+ * @param xml
+ * @return
+ */
 public Operation parse(String xml) {
-//	XStream xs = new XStream(new StaxDriver());;
-//	xs.alias("Operation", Operation.class);
-//	xs.alias("ListCriteria", ListCriteria.class);
-//	xs.alias("ListRequest", ListRequest.class);
-//	xs.alias("RetrievalRequest", RetrievalRequest.class);
-//	xs.alias("id", String.class);
-//	xs.processAnnotations(new Class[] {Operation.class, ListCriteria.class, ListRequest.class, RetrievalRequest.class});
 	Operation br = null;
-	try {
+	
 	br = (Operation) MediaServer.getXmlParser().fromXML(xml);
-	}
-	catch (Throwable t) {
-		t.printStackTrace();
-	}
-	
-	
-	//will probably want to figure out what this really is and return the non-abstract version
-	
-	return br;
-}
-
-public Operation parseFile(File xml) {
-	XStream xs = MediaServer.getXmlParser();
-	
-	Operation br = null;
-	try {
-	br = (Operation) xs.fromXML(xml);
-	}
-	catch (Throwable t) {
-		t.printStackTrace();
-	}
-	
-	
-	//will probably want to figure out what this really is and return the non-abstract version
-	
+		
 	return br;
 }
 

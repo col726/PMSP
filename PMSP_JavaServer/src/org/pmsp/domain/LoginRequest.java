@@ -1,21 +1,21 @@
 package org.pmsp.domain;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
-public class LoginRequest extends Operation {
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
 
-	private String username;
-	private String password;
-	
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
+/**
+ * Class for the login request.  Really only used for the type, at this time the only other attributes 
+ * in the log in request are the user and password which are passed in the http header
+ */
+@XStreamAlias("LoginRequest")
+public class LoginRequest extends RequestType {
+
+
 }

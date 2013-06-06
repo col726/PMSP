@@ -5,6 +5,19 @@ import org.pmsp.PMSP_Constants;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
+/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/**
+ * Domain object for audio files.  Can be used with data payload for downloading or without as just a listing
+ *
+ */
 @XStreamAlias("AudioFile")
 public class AudioFile extends MediaFile {
 
@@ -52,7 +65,9 @@ public class AudioFile extends MediaFile {
 		this.genre = genre;
 	}
 
-
+	/**
+	 * Files are stored in a directory under the data dir following this pattern for directory structure
+	 */
 	@Override
 	public String getFullFilePath() {
 		StringBuilder sb = new StringBuilder();

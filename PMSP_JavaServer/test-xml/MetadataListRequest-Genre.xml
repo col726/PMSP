@@ -1,0 +1,7 @@
+<Operation>
+  <type class="MetadataListRequest" category="Music" listType="Genre">
+    <criteria>
+    </criteria>
+  </type>
+</Operation>
+

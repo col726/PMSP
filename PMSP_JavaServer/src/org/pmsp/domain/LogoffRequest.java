@@ -1,7 +1,5 @@
 package org.pmsp.domain;
 
-import java.util.List;
-
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /*=========================Group/Course Information=========================
@@ -13,17 +11,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *==========================================================================*/
 
 /**
- * Response object for retrieving a list of files
+ * Class for the logoff request.  Really only used for the type.
  */
-@XStreamAlias("Retrieval")
-public class Retrieval {
-	private List<? extends MediaFile> mediaFiles;
+@XStreamAlias("LogoffRequest")
+public class LogoffRequest extends RequestType {
 
-	public List<? extends MediaFile> getMediaFiles() {
-		return mediaFiles;
-	}
 
-	public void setMediaFiles(List<? extends MediaFile> mediaFiles) {
-		this.mediaFiles = mediaFiles;
-	}
 }
