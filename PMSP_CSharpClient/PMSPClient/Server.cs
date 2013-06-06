@@ -16,7 +16,7 @@ namespace PMSPClient
     public class Server
     {
         //Private fields.
-        private string _ip;
+        private string _hostNameOrIpAddress;
         private string _url;
         private const string _port = "31415";
         private string _protocolVersion;
@@ -26,7 +26,7 @@ namespace PMSPClient
         private string _exception;
 
         //Public properties.
-        public string Ip { get { return _ip; } set { _ip = value; _url = "http://" + value + ":" + _port; } }
+        public string HostNameOrIpAddress { get { return _hostNameOrIpAddress; } set { _hostNameOrIpAddress = value; _url = "http://" + value + ":" + _port; } }
         public string Url { get { return _url; } set { _url = "http://" + value + ":" + _port; } }
         public string Port { get { return _port; } }
         public HttpWebRequest Request { get { return _request; } }
@@ -89,16 +89,23 @@ namespace PMSPClient
         }
 
         /// <summary>
-        /// Creates a new request with a session id cookie.
+        /// Creates a new request with a cookie.
         /// </summary>
         /// <param name="sessionId"></param>
-        public void CreateRequest(string sessionId)
+        public void CreateRequest(DfaState currentClientDfaState, string sessionId)
         {
             //Create request.
             CreateRequest();
 
-            //Specify session id.
-            _request.Headers["Cookie"] = sessionId;
+            //Specify current dfa state & session id.
+            Cookie sessionIdCookie = new Cookie(sessionId.Split('=')[0], sessionId.Split('=')[1]);
+            Cookie stateCookie = new Cookie(Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[0], Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[1]);
+            CookieCollection cc = new CookieCollection();
+            cc.Add(sessionIdCookie);
+            cc.Add(stateCookie);
+            _request.CookieContainer = new CookieContainer();
+            _request.CookieContainer.Add(new Uri(_url), sessionIdCookie);
+            _request.CookieContainer.Add(new Uri(_url), stateCookie);
         }
 
         /// <summary>
@@ -157,30 +164,12 @@ namespace PMSPClient
         /// <returns></returns>
         private void HandleException(WebException exception)
         {
-            //If we have a protocol error, check which error status code was returned and set exception message accordingly.
             if (exception.Status == WebExceptionStatus.ProtocolError)
             {
                 var response = exception.Response as HttpWebResponse;
                 if (response != null)
                 {
-                    switch ((int)response.StatusCode)
-                    {
-                        case 400:
-                            _exception = "PMSP protocol version " + _protocolVersion + " was either unspecified or contained illegal characters.";
-                            break;
-                        case 401:
-                            _exception = "Incorrect username and/or password.";
-                            break;
-                        case 500:
-                            _exception = "The submitted XML was incorrectly formatted.";
-                            break;
-                        case 501:
-                            _exception = "PMSP protocol version " + _protocolVersion + " is not supported on this server.";
-                            break;
-                        default:
-                            _exception = exception.Message;
-                            break;
-                    }
+                    _exception = response.StatusDescription;
                 }
                 else
                 {

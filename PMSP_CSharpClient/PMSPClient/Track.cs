@@ -80,18 +80,23 @@ namespace PMSPClient
             //Instantiate track list.
             List<Track> tracks = new List<Track>();
 
-            //Drill down through child nodes to get track listings.
-            XmlNode trackList = protocol.GetMediaFileList(criteriaType, criteriaValue).SelectSingleNode("//MediaFileListing").ChildNodes[0];
-            
-            //Insert tracks.
-            foreach (XmlNode track in trackList.ChildNodes)
+            //If we have tracks, insert them.
+            try
             {
-                tracks.Add(new Track(   track.Attributes["pmspId"].Value,
-                                        new Artist(track.Attributes["artist"].Value),
-                                        track.Attributes["title"].Value,
-                                        track.Attributes["album"].Value,
-                                        track.Attributes["genre"].Value));
+                //Drill down through child nodes to get track listings.
+                XmlNode trackList = protocol.GetMediaFileList(criteriaType, criteriaValue).SelectSingleNode("//MediaFileListing").ChildNodes[0];
+
+                //Insert tracks.
+                foreach (XmlNode track in trackList.ChildNodes)
+                {
+                    tracks.Add(new Track(track.Attributes["pmspId"].Value,
+                                            new Artist(track.Attributes["artist"].Value),
+                                            track.Attributes["title"].Value,
+                                            track.Attributes["album"].Value,
+                                            track.Attributes["genre"].Value));
+                }
             }
+            catch (Exception ex) { }
 
             //Return list.
             return tracks;
@@ -165,6 +170,11 @@ namespace PMSPClient
             }
         }
 
+        /// <summary>
+        /// Compares the checksums of the server & client to ensure we have a complete file.
+        /// </summary>
+        /// <param name="audioFile"></param>
+        /// <returns></returns>
         private bool IsValid(XmlNode audioFile)
         {
             //Get server-provided checksum.

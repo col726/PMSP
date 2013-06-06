@@ -31,14 +31,19 @@ namespace PMSPClient
             //Instantiate genre list.
             List<Genre> genres = new List<Genre>();
 
-            //Drill down through child nodes to get genre listings.
-            XmlNode genreList = protocol.GetMetadataList(ListType.Genre).SelectSingleNode("//MetadataListing");
-
-            //Insert genres.
-            foreach (XmlNode genre in genreList.ChildNodes)
+            //If we have genres, insert them.
+            try
             {
-                genres.Add(new Genre(genre.InnerText));
+                //Drill down through child nodes to get genre listings.
+                XmlNode genreList = protocol.GetMetadataList(ListType.Genre).SelectSingleNode("//MetadataListing");
+
+                //Insert genres.
+                foreach (XmlNode genre in genreList.ChildNodes)
+                {
+                    genres.Add(new Genre(genre.InnerText));
+                }
             }
+            catch (Exception ex) { }
 
             //Return list.
             return genres;
