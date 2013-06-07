@@ -83,13 +83,13 @@ public class RequestHandler implements Container {
 			else if (Arrays.binarySearch(MediaServer.props.getProperty(SUPPORTED_VERSIONS_KEY).split(","), versionString) < 0) {
 				response.setStatus(Status.NOT_IMPLEMENTED);
 				response.setDescription("Server does not support PMSP version " + versionString);
-				
+				response.setValue(PMSP_Constants.HEADER_VERSION_STRING, MediaServer.props.getProperty(SUPPORTED_VERSIONS_KEY));
 				rb.setReponseCookies(response, sessionId, state);
 				return;
 			}
 			//if the version # is acceptable, set that version # in our response
 			else {
-				response.setValue("PMSP-Version", versionString);
+				response.setValue(PMSP_Constants.HEADER_VERSION_STRING, versionString);
 			}
 			
 			//parse the message
@@ -114,7 +114,7 @@ public class RequestHandler implements Container {
 			//STATEFUL this is the call to the DFA enforcement logic, we pass in the current state and the type of request
 			if (!dfa.checkTransition(state, op.getType())) {
 				//Use a different http status code specifically for DFA violations
-				response.setCode(442);
+				response.setCode(PMSP_Constants.DFA_VIOLATION_RETURN_STATUS);
 				response.setDescription("Requested state transition from " + state + " not valid.");
 				
 				//clear cookies and session to log them out

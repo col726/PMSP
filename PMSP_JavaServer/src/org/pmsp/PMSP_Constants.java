@@ -40,5 +40,6 @@ public class PMSP_Constants {
 	
 	//Other constants
 	public static final String DB_DRIVER_CLASS = "org.apache.derby.jdbc.EmbeddedDriver";
+	public static final int DFA_VIOLATION_RETURN_STATUS= 442;
 
 }
