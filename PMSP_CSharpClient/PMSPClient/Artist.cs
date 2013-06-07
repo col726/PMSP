@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*=======================Directives and Pragmas=============================*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,15 +32,20 @@ namespace PMSPClient
             //Instantiate artist list.
             List<Artist> artists = new List<Artist>();
 
-            //Drill down through child nodes to get artist listings.
-            XmlNode artistList = protocol.GetMetadataList(ListType.Artist).SelectSingleNode("//MetadataListing");
-
-            //Insert artists.
-            foreach (XmlNode artist in artistList.ChildNodes)
+            //If we have artists, insert them.
+            try
             {
-                artists.Add(new Artist(artist.InnerText));
-            }
+                //Drill down through child nodes to get artist listings.
+                XmlNode artistList = protocol.GetMetadataList(ListType.Artist).SelectSingleNode("//MetadataListing");
 
+                //Insert artists into list.
+                foreach (XmlNode artist in artistList.ChildNodes)
+                {
+                    artists.Add(new Artist(artist.InnerText));
+                }
+            }
+            catch (Exception ex) { }
+            
             //Return list.
             return artists;
         }

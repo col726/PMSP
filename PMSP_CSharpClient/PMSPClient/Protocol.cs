@@ -20,6 +20,9 @@ namespace PMSPClient
         private string _version = "1.0";
         private string _userName;
         private string _password;
+        private const DfaState _initialDfaState = DfaState.AwaitingLogin;
+        private DfaState _currentServerDfaState = _initialDfaState;
+        private DfaState _currentClientDfaState = _initialDfaState;
         private string _sessionId;
         private bool _isAuthenticated = false;
         private string _exception;
@@ -66,42 +69,85 @@ namespace PMSPClient
         /// </summary>
         public bool Authenticate()
         {
-            //Inform user of authentication process.
-            Utilities.WriteNewLine();
-            Console.Write("Now attempting authentication on server " + _server.Url + "...");
-
-            //Determine whether or not we're authenticated.
-            try
+            //Ensure client & server are in the initial DFA state.
+            if (_currentServerDfaState == _initialDfaState && _currentClientDfaState == _initialDfaState)
             {
-                //Create request.
-                _server.CreateRequest(_userName, _password);
+                //Inform user of authentication process.
+                Utilities.WriteNewLine();
+                Console.Write("Now attempting authentication on server " + _server.Url + "...");
 
-                //Get http response.
-                HttpWebResponse response = _server.GetResponse();
-
-                //If the response is null, there was an error.  Set exception message.
-                if (response == null)
+                //Determine whether or not we're authenticated.
+                try
                 {
-                    Console.Write("Failed.");
-                    _exception = _server.Exception;
+                    //Create request.
+                    _server.CreateRequest(_userName, _password);
+
+                    //Define operation.
+                    XmlElement operation = _server.RequestData.CreateElement("Operation");
+                    _server.RequestData.AppendChild(operation);
+
+                    //Define type.
+                    XmlElement type = _server.RequestData.CreateElement("type");
+                    operation.AppendChild(type);
+
+                    //Set attributes.
+                    type.SetAttribute("class", "LoginRequest");
+
+                    //Get http response.
+                    HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+                    //If the response is null, there was an error.  Set exception message.
+                    if (response == null)
+                    {
+                        Console.Write("Failed.");
+                        _exception = _server.Exception;
+                    }
+
+                    //Otherwise, set cookie value for subsequent requests.
+                    else
+                    {
+                        //Ensure server is in correct DFA state before proceeding.
+                        try
+                        {
+                            //Set server DFA state.
+                            _currentServerDfaState = Utilities.GetEnumValueFromDescription<DfaState>(Utilities.GetCookieFromHeader(response.Headers["Set-Cookie"], "pmsp-state"));
+
+                            //Ensure server is now in Idle state.
+                            if (_currentServerDfaState == DfaState.Idle)
+                            {
+                                //Inform user of success.
+                                Console.Write("Success!");
+
+                                //Set session id & client state.
+                                _sessionId = Utilities.GetCookieFromHeader(response.Headers["Set-Cookie"], "pmsp-sessionid");
+                                _currentClientDfaState = _currentServerDfaState;
+
+                                //Set boolean.
+                                _isAuthenticated = true;
+                            }
+
+                            //If not, set error message.
+                            else
+                            {
+                                _exception = "The server was in an unexpected state.";
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _exception = "The server was in an unexpected state.  " + ex.Message + ".";
+                        }
+                    }
                 }
-
-                //Otherwise, set cookie value for subsequent requests.
-                else
+                catch (Exception exception)
                 {
-                    //Inform user.
-                    Console.Write("Success!");
-
-                    //Set cookie
-                    _sessionId = response.Headers["Set-Cookie"];
-
-                    //Set boolean.
-                    _isAuthenticated = true;
+                    _exception = exception.Message;
                 }
             }
-            catch (Exception exception)
+
+            //If the client and server are not in their expected initial state, set error message.
+            else
             {
-                _exception = exception.Message;
+                _exception = "Both the client and server must be in the " + _initialDfaState + " state in order to attempt an authentication request.";
             }
 
             //Return authentication status.
@@ -115,59 +161,93 @@ namespace PMSPClient
         /// <returns></returns>
         public XmlDocument GetMetadataList(ListType xmllistType)
         {
-            //Create new request.
-            _server.CreateRequest(_sessionId);
-
-            //Define operation.
-            XmlElement operation = _server.RequestData.CreateElement("Operation");
-            _server.RequestData.AppendChild(operation);
-
-            //Define type.
-            XmlElement type = _server.RequestData.CreateElement("type");
-            operation.AppendChild(type);
-
-            //Define criteria.
-            XmlElement criteria = _server.RequestData.CreateElement("criteria");
-            type.AppendChild(criteria);
-
-            //Get list of tracks or artists.
-            switch (xmllistType)
+            //Ensure client & server are in the Idle DFA state.
+            if (_currentServerDfaState == DfaState.Idle && _currentClientDfaState == DfaState.Idle)
             {
-                case ListType.Artist:
+                //Create new request with current DFA state & session id.
+                _server.CreateRequest(_currentClientDfaState, _sessionId);
 
-                    //Set attributes.
-                    type.SetAttribute("class", "ListRequest");
-                    type.SetAttribute("category", "Music");
-                    type.SetAttribute("listType", "Artist");
+                //Define operation.
+                XmlElement operation = _server.RequestData.CreateElement("Operation");
+                _server.RequestData.AppendChild(operation);
 
-                    //Break.
-                    break;
+                //Define type.
+                XmlElement type = _server.RequestData.CreateElement("type");
+                operation.AppendChild(type);
 
-                case ListType.Genre:
+                //Define criteria.
+                XmlElement criteria = _server.RequestData.CreateElement("criteria");
+                type.AppendChild(criteria);
 
-                    //Set attributes.
-                    type.SetAttribute("class", "ListRequest");
-                    type.SetAttribute("category", "Music");
-                    type.SetAttribute("listType", "Genre");
+                //Get list of tracks or artists.
+                switch (xmllistType)
+                {
+                    case ListType.Artist:
 
-                    //Break.
-                    break;
+                        //Set attributes.
+                        type.SetAttribute("class", "MetadataListRequest");
+                        type.SetAttribute("category", "Music");
+                        type.SetAttribute("listType", "Artist");
+
+                        //Break.
+                        break;
+
+                    case ListType.Genre:
+
+                        //Set attributes.
+                        type.SetAttribute("class", "MetadataListRequest");
+                        type.SetAttribute("category", "Music");
+                        type.SetAttribute("listType", "Genre");
+
+                        //Break.
+                        break;
+                }
+
+                //Get response.
+                HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+                //If the response is null, there was an error.  Set exception message.
+                if (response == null)
+                {
+                    _exception = _server.Exception;
+                }
+
+                //Otherwise, load xml from response.
+                else
+                {
+                    //Ensure server is in correct DFA state before proceeding.
+                    try
+                    {
+                        //Set server DFA state.
+                        _currentServerDfaState = Utilities.GetEnumValueFromDescription<DfaState>(Utilities.GetCookieFromHeader(response.Headers["Set-Cookie"], "pmsp-state"));
+
+                        //Ensure server is now in AwaitingListChoice state.
+                        if (_currentServerDfaState == DfaState.AwaitingListChoice)
+                        {
+                            //Set client state.
+                            _currentClientDfaState = _currentServerDfaState;
+
+                            //Load xml from response.
+                            _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                        }
+                        //If not, set error message.
+                        else
+                        {
+                            _exception = "The server was in an unexpected state.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _exception = "The server was in an unexpected state.  " + ex.Message + ".";
+                    }
+                }
             }
 
-            //Get response.
-            HttpWebResponse response = _server.GetResponse(_server.RequestData);
-
-            //If the response is null, there was an error.  Set exception message.
-            if (response == null)
-            {
-                _exception = _server.Exception;
-            }
-
-            //Otherwise, load xml from response.
+            //If the client and server are not in their expected initial state, set error message.
             else
             {
-                //Load xml from response.
-                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                _exception = "Both the client and server must be in the " + DfaState.Idle + " state in order to attempt a metadata list request.";
+                return null;
             }
 
             //Return list.
@@ -181,49 +261,82 @@ namespace PMSPClient
         /// <returns></returns>
         public XmlDocument GetMediaFileList(ListType criteriaType, string criteriaValue)
         {
-            //Create new request.
-            _server.CreateRequest(_sessionId);
-
-            //Define operation.
-            XmlElement operation = _server.RequestData.CreateElement("Operation");
-            _server.RequestData.AppendChild(operation);
-
-            //Define type.
-            XmlElement type = _server.RequestData.CreateElement("type");
-            operation.AppendChild(type);
-
-            //Define criteria.
-            XmlElement criteria = _server.RequestData.CreateElement("criteria");
-            type.AppendChild(criteria);
-
-            //Set attributes.
-            type.SetAttribute("class", "ListRequest");
-            type.SetAttribute("category", "Music");
-            type.SetAttribute("listType", "Track");
-
-            //If we have list criteria, specify it.
-            if (!String.IsNullOrEmpty(criteriaValue))
+            //Ensure client & server are in the AwaitingListChoice DFA state.
+            if (_currentServerDfaState == DfaState.AwaitingListChoice && _currentClientDfaState == DfaState.AwaitingListChoice)
             {
-                XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
-                listCriteria.SetAttribute("name", criteriaType.ToString());
-                listCriteria.SetAttribute("value", criteriaValue);
-                criteria.AppendChild(listCriteria);
+                //Create new request.
+                _server.CreateRequest(_currentClientDfaState, _sessionId);
+
+                //Define operation.
+                XmlElement operation = _server.RequestData.CreateElement("Operation");
+                _server.RequestData.AppendChild(operation);
+
+                //Define type.
+                XmlElement type = _server.RequestData.CreateElement("type");
+                operation.AppendChild(type);
+
+                //Define criteria.
+                XmlElement criteria = _server.RequestData.CreateElement("criteria");
+                type.AppendChild(criteria);
+
+                //Set attributes.
+                type.SetAttribute("class", "FileListRequest");
+                type.SetAttribute("category", "Music");
+
+                //If we have list criteria, specify it.
+                if (!String.IsNullOrEmpty(criteriaValue))
+                {
+                    XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
+                    listCriteria.SetAttribute("name", criteriaType.ToString());
+                    listCriteria.SetAttribute("value", criteriaValue);
+                    criteria.AppendChild(listCriteria);
+                }
+
+                //Get response.
+                HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+                //If the response is null, there was an error.  Set exception message.
+                if (response == null)
+                {
+                    _exception = _server.Exception;
+                }
+
+                //Otherwise, load xml from response.
+                else
+                {
+                    //Ensure server is in correct DFA state before proceeding.
+                    try
+                    {
+                        //Set server DFA state.
+                        _currentServerDfaState = Utilities.GetEnumValueFromDescription<DfaState>(Utilities.GetCookieFromHeader(response.Headers["Set-Cookie"], "pmsp-state"));
+
+                        //Ensure server is now in AwaitingFileChoice state.
+                        if (_currentServerDfaState == DfaState.AwaitingFileChoice)
+                        {
+                            //Set client state.
+                            _currentClientDfaState = _currentServerDfaState;
+
+                            //Load xml from response.
+                            _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                        }
+                        //If not, set error message.
+                        else
+                        {
+                            _exception = "The server was in an unexpected state.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _exception = "The server was in an unexpected state.  " + ex.Message + ".";
+                    }
+                }
             }
 
-            //Get response.
-            HttpWebResponse response = _server.GetResponse(_server.RequestData);
-
-            //If the response is null, there was an error.  Set exception message.
-            if (response == null)
-            {
-                _exception = _server.Exception;
-            }
-
-            //Otherwise, load xml from response.
+            //If the client and server are not in their expected initial state, set error message.
             else
             {
-                //Load xml from response.
-                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                _exception = "Both the client and server must be in the " + DfaState.AwaitingListChoice + " state in order to attempt a media file list request.";
+                return null;
             }
 
             //Return list.
@@ -237,39 +350,73 @@ namespace PMSPClient
         /// <returns></returns>
         public XmlDocument GetFile(string fileId)
         {
-            //Create new request.
-            _server.CreateRequest(_sessionId);
-
-            //Define retrieval.
-            XmlElement operation = _server.RequestData.CreateElement("Operation");
-            _server.RequestData.AppendChild(operation);
-
-            //Define type.
-            XmlElement type = _server.RequestData.CreateElement("type");
-            type.SetAttribute("class", "RetrievalRequest");
-            type.SetAttribute("mediaType", "Music");
-            operation.AppendChild(type);
-
-            //Define file ID.
-            XmlElement id = _server.RequestData.CreateElement("id");
-            XmlText idText = _server.RequestData.CreateTextNode(fileId);
-            id.AppendChild(idText);
-            type.AppendChild(id);
-
-            //Get response.
-            HttpWebResponse response = _server.GetResponse(_server.RequestData);
-
-            //If the response is null, there was an error.  Set exception message.
-            if (response == null)
+            //Ensure client & server are in the AwaitingFileChoice DFA state.
+            if (_currentServerDfaState == DfaState.AwaitingFileChoice && _currentClientDfaState == DfaState.AwaitingFileChoice)
             {
-                _exception = _server.Exception;
+                //Create new request.
+                _server.CreateRequest(_currentClientDfaState, _sessionId);
+
+                //Define retrieval.
+                XmlElement operation = _server.RequestData.CreateElement("Operation");
+                _server.RequestData.AppendChild(operation);
+
+                //Define type.
+                XmlElement type = _server.RequestData.CreateElement("type");
+                type.SetAttribute("class", "RetrievalRequest");
+                type.SetAttribute("mediaType", "Music");
+                operation.AppendChild(type);
+
+                //Define file ID.
+                XmlElement id = _server.RequestData.CreateElement("id");
+                XmlText idText = _server.RequestData.CreateTextNode(fileId);
+                id.AppendChild(idText);
+                type.AppendChild(id);
+
+                //Get response.
+                HttpWebResponse response = _server.GetResponse(_server.RequestData);
+
+                //If the response is null, there was an error.  Set exception message.
+                if (response == null)
+                {
+                    _exception = _server.Exception;
+                }
+
+                //Otherwise, load xml from response.
+                else
+                {
+                    //Ensure server is in correct DFA state before proceeding.
+                    try
+                    {
+                        //Set server DFA state.
+                        _currentServerDfaState = Utilities.GetEnumValueFromDescription<DfaState>(Utilities.GetCookieFromHeader(response.Headers["Set-Cookie"], "pmsp-state"));
+
+                        //Ensure server is now in Idle state.
+                        if (_currentServerDfaState == DfaState.Idle)
+                        {
+                            //Set client state.
+                            _currentClientDfaState = _currentServerDfaState;
+
+                            //Load xml from response.
+                            _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                        }
+                        //If not, set error message.
+                        else
+                        {
+                            _exception = "The server was in an unexpected state.";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _exception = "The server was in an unexpected state.  " + ex.Message + ".";
+                    }
+                }
             }
 
-            //Otherwise, load xml from response.
+            //If the client and server are not in their expected initial state, set error message.
             else
             {
-                //Load xml from response.
-                _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
+                _exception = "Both the client and server must be in the " + DfaState.AwaitingFileChoice + " state in order to attempt a media file list request.";
+                return null;
             }
 
             //Return file.
