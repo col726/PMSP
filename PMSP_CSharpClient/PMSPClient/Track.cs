@@ -50,12 +50,12 @@ namespace PMSPClient
             _album = album;
             _genre = genre;
 
-            //Populate metadata.
+            //Future enhancement - populate additional metadata.
             //PopulateMetadata();
         }
 
         /// <summary>
-        /// Populates track metadata from ID3 tags.
+        /// Future enhancement - populates additional track metadata from ID3 tags.
         /// </summary>
         public void PopulateMetadata()
         {
@@ -147,8 +147,7 @@ namespace PMSPClient
             //If we have a file, continue.
             if (_audioFile != null)
             {
-                //If the audio file is valid per checksum comparison, stream track.
-                if (IsValid(_audioFile))
+                try
                 {
                     //Set mp3 byte array.
                     _mp3 = Convert.FromBase64String(_audioFile.SelectSingleNode("data/text()").Value);
@@ -163,9 +162,9 @@ namespace PMSPClient
                 }
 
                 //Otherwise, set error.
-                else
+                catch (Exception ex)
                 {
-                    _exception = "The file is corrupted.  Please select another track.";
+                    _exception = ex.Message;
                 }
             }
 
@@ -219,20 +218,25 @@ namespace PMSPClient
         /// </summary>
         /// <param name="audioFile"></param>
         /// <returns></returns>
-        private bool IsValid(XmlNode audioFile)
+        public bool Validate()
         {
             //Get server-provided checksum.
-            string serverCheckSum = audioFile.Attributes["checksum"].Value;
+            string serverCheckSum = _audioFile.Attributes["checksum"].Value;
 
             //Set mp3 string.
-            string mp3 = audioFile.SelectSingleNode("//Retrieval/mediaFiles/AudioFile/data/text()").Value;
+            string mp3 = _audioFile.SelectSingleNode("//Retrieval/mediaFiles/AudioFile/data/text()").Value;
 
             //Generate checksum on mp3 string.
             ASCIIEncoding encoder = new ASCIIEncoding();
             byte[] buffer = encoder.GetBytes(mp3);
             SHA1CryptoServiceProvider cryptoTransformSHA1 = new SHA1CryptoServiceProvider();
             string clientCheckSum = BitConverter.ToString(cryptoTransformSHA1.ComputeHash(buffer)).Replace("-", "");
-            
+
+            /*******************BEGIN TEST FUZZ**********************/
+            //Set invalid client checksum.
+            //clientCheckSum = "InvalidChecksum.";
+            /*******************END TEST FUZZ************************/
+
             //If client checksum matches server checksum, return true.
             if (serverCheckSum.ToLower() == clientCheckSum.ToLower())
             {
