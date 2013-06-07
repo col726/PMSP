@@ -21,6 +21,9 @@ import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
 import org.simpleframework.http.core.Container;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.io.StreamException;
+
 /*=========================Group/Course Information=========================
  * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
  * CS 544
@@ -54,6 +57,13 @@ public class RequestHandler implements Container {
 			logger.debug(request.getContent());
 			
 			long time = System.currentTimeMillis();
+			ResponseBuilder rb = new ResponseBuilder();
+			
+			//get the two cookies we use
+			Cookie sessionCookie = request.getCookie(PMSP_Constants.COOKIE_SESSION_KEY);
+			Cookie stateCookie = request.getCookie(PMSP_Constants.COOKIE_STATE_KEY);
+			String state = stateCookie == null ? STATE_WAIT_FOR_LOGIN : stateCookie.getValue();
+			String sessionId = sessionCookie == null ? "" : sessionCookie.getValue();
 
 			//set some generic headers
 			response.setValue("Content-Type", "text/xml");
@@ -65,12 +75,16 @@ public class RequestHandler implements Container {
 			if (versionString == null || !versionString.trim().matches("^\\d+\\.\\d+$")) {
 				response.setStatus(Status.BAD_REQUEST);
 				response.setDescription("Missing or invalid header: " + PMSP_Constants.HEADER_VERSION_STRING);
+
+				rb.setReponseCookies(response, sessionId, state);
 				return;
 			}
 			//check to see if the version being requested by the client is supported.  If not, send an http 501 
 			else if (Arrays.binarySearch(MediaServer.props.getProperty(SUPPORTED_VERSIONS_KEY).split(","), versionString) < 0) {
 				response.setStatus(Status.NOT_IMPLEMENTED);
 				response.setDescription("Server does not support PMSP version " + versionString);
+				
+				rb.setReponseCookies(response, sessionId, state);
 				return;
 			}
 			//if the version # is acceptable, set that version # in our response
@@ -82,37 +96,42 @@ public class RequestHandler implements Container {
 			MessageParser mp = new MessageParser();
 			Operation op = mp.parse(request.getContent());
 			
-			//get the two cookies we use
-			Cookie sessionCookie = request.getCookie(PMSP_Constants.COOKIE_SESSION_KEY);
-			Cookie stateCookie = request.getCookie(PMSP_Constants.COOKIE_STATE_KEY);
+
 			
 			//the client should either have both cookies (logged in) or neither cookie (not logged in)
 			if ((sessionCookie != null && stateCookie == null) || (sessionCookie == null && stateCookie != null)) {
 				response.setStatus(Status.BAD_REQUEST);
 				response.setDescription("Invalid pmsp cookie pair.  Clear pmsp cookies and try again?");
+				
+				rb.setReponseCookies(response, sessionId, state);
 				return;
 			}
 
-			String state = stateCookie == null ? STATE_WAIT_FOR_LOGIN : stateCookie.getValue();
+			
 			
 			//STATEFUL this is the call to the DFA enforcement logic, we pass in the current state and the type of request
 			if (!dfa.checkTransition(state, op.getType())) {
-				response.setStatus(Status.BAD_REQUEST);
+				//Use a different http status code specifically for DFA violations
+				response.setCode(442);
 				response.setDescription("Requested state transition from " + state + " not valid.");
+				
+				//clear cookies and session to log them out
+				rb.setReponseCookies(response, "", PMSP_Constants.STATE_WAIT_FOR_LOGIN);
+				sessions.remove(sessionCookie.getValue());
 				return;
 			}
 			
 			//If all checks have passed thus far, then build the response
 			String user = null;
 			RequestType requestType = op.getType();
-			ResponseBuilder rb = new ResponseBuilder();
 			
-			//login request handled differently than the requests for which you must be logged in
+			
+			//Need to have user authentication code happen first
 			if (op.getType() instanceof LoginRequest) {
 				user = rb.login(request, response, op);
 				//if the login was a success then store that session id and user in the sessions map
 				if (user != null) {
-					String sessionId = user;
+					sessionId = user;
 					sessions.put(sessionId, user);
 				}
 			}
@@ -126,33 +145,46 @@ public class RequestHandler implements Container {
 				response.setStatus(Status.UNAUTHORIZED);
 				//tell the user how to log in
 				response.setValue("WWW-Authenticate", "Basic realm=\"PMSP Server\"");
+				rb.setReponseCookies(response, "", PMSP_Constants.STATE_WAIT_FOR_LOGIN);
+				
 			}
 			//build response for the request type
 			else if(sessionCookie != null) {
-				//update session id cookie to time out after 20 minutes
-				sessionCookie = new Cookie(PMSP_Constants.COOKIE_SESSION_KEY, user);
-				sessionCookie.setExpiry(1200);
 				
 				if (requestType instanceof MetadataListRequest){
-					rb.listMetadata(request, response, op, user);
+					rb.listMetadata(request, response, op, sessionId);
 				}
 				else if (requestType instanceof FileListRequest) {
-					rb.listFiles(request, response, op, user);
+					rb.listFiles(request, response, op, sessionId);
 					
 				}
 				else if (requestType instanceof RetrievalRequest) {
-					rb.retrieval(request, response, op, user);	
+					rb.retrieval(request, response, op, sessionId);	
 				}
 				else if (requestType instanceof LogoffRequest) {
-					rb.logoff(request, response, op, user);
+					rb.logoff(request, response, op, sessionId);
 					//also clear session from sessions map
 					sessions.remove(sessionCookie.getValue());
 				}
 			}
 
 
-			
-		} catch(Throwable t) {
+		} 
+		catch (ConversionException ce) {
+			response.setStatus(Status.BAD_REQUEST);
+			response.setDescription("Unrecognized xml message");
+			try {
+				logger.error(request.getContent(), ce);
+			} catch (IOException e) {			}
+		}
+		catch (StreamException se) {
+			response.setStatus(Status.BAD_REQUEST);
+			response.setDescription("Malformed xml message");
+			try {
+				logger.error(request.getContent(), se);
+			} catch (IOException e) {			}
+		}
+		catch(Throwable t) {
 			//generic "something bad happened on the server" error
 			try {
 				response.setStatus(Status.INTERNAL_SERVER_ERROR);
@@ -167,4 +199,5 @@ public class RequestHandler implements Container {
 			} catch (IOException e) {}
 		}
 	}
+	
 }

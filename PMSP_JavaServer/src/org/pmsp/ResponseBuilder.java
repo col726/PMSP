@@ -1,6 +1,5 @@
 package org.pmsp;
 
-import static org.pmsp.PMSP_Constants.COOKIE_STATE_KEY;
 import static org.pmsp.PMSP_Constants.STATE_IDLE;
 import static org.pmsp.PMSP_Constants.STATE_WAIT_FOR_FILE_CHOICE;
 import static org.pmsp.PMSP_Constants.STATE_WAIT_FOR_LIST_CHOICE;
@@ -50,11 +49,11 @@ public class ResponseBuilder {
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	public void listFiles(Request request, Response response, Operation operation, String user) throws IOException, SQLException {
+	public void listFiles(Request request, Response response, Operation operation, String sessionId) 
+			throws IOException, SQLException {
 		PrintStream body = response.getPrintStream();
-		response.setCookie(COOKIE_STATE_KEY, STATE_WAIT_FOR_FILE_CHOICE);
-		
-		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+
+		setReponseCookies(response, sessionId, STATE_WAIT_FOR_FILE_CHOICE);
 		
 		MediaFileListing mfl = new MediaFileListing();
 		
@@ -63,6 +62,7 @@ public class ResponseBuilder {
 		mfl.setMediaFiles(dao.findFiles((FileListRequest)operation.getType()));
 		
 		//call xstream object to convert our object to xml, write that in http body
+		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		body.println(MediaServer.getXmlParser().toXML(mfl));			
 
 		body.close();
@@ -77,12 +77,11 @@ public class ResponseBuilder {
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	public void listMetadata(Request request, Response response, Operation operation, String user) throws IOException, 
+	public void listMetadata(Request request, Response response, Operation operation, String sessionId) throws IOException, 
 	SQLException {
 		PrintStream body = response.getPrintStream();
-		response.setCookie(COOKIE_STATE_KEY, STATE_WAIT_FOR_LIST_CHOICE);
 		
-		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		setReponseCookies(response, sessionId, STATE_WAIT_FOR_LIST_CHOICE);
 		
 		MediaMetadataListing mml = new MediaMetadataListing();
 		
@@ -91,13 +90,14 @@ public class ResponseBuilder {
 		mml.setMetadata(dao.findMetadata((MetadataListRequest)operation.getType()));
 		
 		//call xstream object to convert our object to xml, write that in http body
+		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		body.println(MediaServer.getXmlParser().toXML(mml));		
 
 		body.close();
 	}
 	
 	/**
-	 * 
+	 * Look up the file information and the file itself in order to build the response message
 	 * @param request
 	 * @param response
 	 * @param operation
@@ -105,11 +105,12 @@ public class ResponseBuilder {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public void retrieval(Request request, Response response, Operation operation, String user) throws IOException, Exception {
+	public void retrieval(Request request, Response response, Operation operation, String sessionId) 
+			throws IOException, Exception {
 		PrintStream body = response.getPrintStream();
-		response.setCookie(COOKIE_STATE_KEY, PMSP_Constants.STATE_IDLE);
 		
-		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		setReponseCookies(response, sessionId, STATE_IDLE);
+		
 		
 		Retrieval r = new Retrieval();
 		RetrievalRequest retrieveRequest = (RetrievalRequest)operation.getType();
@@ -126,6 +127,7 @@ public class ResponseBuilder {
 		r.setMediaFiles(files);
 		
 		//call xstream object to convert our object to xml, write that in http body
+		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		body.println(MediaServer.getXmlParser().toXML(r));	
 
 		body.close();
@@ -147,11 +149,7 @@ public class ResponseBuilder {
 		if (user != null) {
 			//body of message is empty so use a 204
 			response.setStatus(Status.NO_CONTENT);
-			//set session id cookie to time out after 20 minutes
-			Cookie sessionCookie = new Cookie(PMSP_Constants.COOKIE_SESSION_KEY, user);
-			sessionCookie.setExpiry(1200);
-			response.setCookie(sessionCookie);
-			response.setCookie(COOKIE_STATE_KEY, STATE_IDLE);
+			setReponseCookies(response, user, STATE_IDLE);
 			
 			response.close();
 		}	
@@ -166,19 +164,37 @@ public class ResponseBuilder {
 	 * @param user
 	 * @throws IOException
 	 */
-	public void logoff(Request request, Response response, Operation operation, String user) throws IOException {
+	public void logoff(Request request, Response response, Operation operation, String sessionId) throws IOException {
 		//body of message is empty so use a 204
 		response.setStatus(Status.NO_CONTENT);
 		
 		//Clear the cookie value and set to expiry to 0 to tell the client to clear
-		Cookie sessionCookie = new Cookie(PMSP_Constants.COOKIE_SESSION_KEY, "");
-		sessionCookie.setExpiry(0);
-		response.setCookie(sessionCookie);
-		response.setCookie(COOKIE_STATE_KEY, PMSP_Constants.STATE_WAIT_FOR_LOGIN);
+		setReponseCookies(response, null, PMSP_Constants.STATE_WAIT_FOR_LOGIN);
 		
 		response.close();
 		
 	}
+	
+	/**
+	 * Sets the values of the cookies sent back to the client
+	 * @param response
+	 * @param sessionId
+	 * @param state
+	 */
+	protected void setReponseCookies(Response response, String sessionId, String state) {
+		//echo back the sessions id, set a new expiry time
+		Cookie sessionCookie = new Cookie(PMSP_Constants.COOKIE_SESSION_KEY, sessionId == null ? "" : sessionId);
+		int expiry = Integer.parseInt(MediaServer.props.getProperty(PMSP_Constants.SESSION_TIMEOUT_DURATION_KEY));
+		sessionCookie.setExpiry(sessionCookie.getValue().equals("") ? 0 : expiry);
+		response.setCookie(sessionCookie);
+		
+		//set an expiry time and set the state's new value
+		Cookie stateCookie = new Cookie(PMSP_Constants.COOKIE_STATE_KEY, state == null ? "" : state);
+		stateCookie.setExpiry(sessionCookie.getValue().equals("") ? 0 : expiry);
+		response.setCookie(stateCookie);
+		
+	}
+	
 	/**
 	 * Create the base64 representation of the contents of the file
 	 * @param filename

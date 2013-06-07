@@ -52,7 +52,16 @@ import com.thoughtworks.xstream.XStream;
  */
 public class MediaServer {
 
-	public static Properties props = new Properties();
+	private static final Properties defaultProps = new Properties();
+	static {
+		defaultProps.put(PMSP_Constants.SESSION_TIMEOUT_DURATION_KEY, "1200");
+		defaultProps.put(PMSP_Constants.DATA_DIR_KEY, ".");
+		defaultProps.put(PMSP_Constants.LISTEN_HOST_KEY, "0.0.0.0");
+		defaultProps.put(PMSP_Constants.LISTEN_PORT_KEY, "31415");
+		defaultProps.put(PMSP_Constants.LOGGING_CONFIG_KEY, "logger.properties");
+	}
+	
+	public static Properties props = new Properties(defaultProps);
 	private static final Logger logger = Logger.getLogger(MediaServer.class);
 	private static XStream parser = new XStream();
 	protected static Server server;
@@ -188,16 +197,11 @@ public class MediaServer {
 		String propFile = System.getProperty(PROPERTIES_FILE_KEY, PROPERTIES_FILE_KEY);
 		
 		//configure the logger, default to "logger.properties" if no log config file is specified
-		PropertyConfigurator.configureAndWatch(props.getProperty(PROPERTIES_FILE_KEY,"logger.properties"));
+		PropertyConfigurator.configureAndWatch(props.getProperty(PMSP_Constants.LOGGING_CONFIG_KEY));
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(propFile);
 			props.load(fis);
-			//set the default data dir
-			//load the default instead of depending on remembering the default path at property fetch time
-			if (props.get(PMSP_Constants.DATA_DIR_KEY) == null) {
-				props.setProperty(PMSP_Constants.DATA_DIR_KEY, ".");
-			}
 		}
 		finally {
 			fis.close();	
@@ -231,8 +235,8 @@ public class MediaServer {
 		connection = new SocketConnection(server);
 		
 		//default to the wildcard ip and port 31415 but both can be overridden in the config file
-		String host = props.getProperty(LISTEN_HOST_KEY, "0.0.0.0");
-		int port = Integer.parseInt(props.getProperty(LISTEN_PORT_KEY, "31415"));
+		String host = props.getProperty(LISTEN_HOST_KEY);
+		int port = Integer.parseInt(props.getProperty(LISTEN_PORT_KEY));
 		SocketAddress address = new InetSocketAddress(host, port);
 
 		//do the bind

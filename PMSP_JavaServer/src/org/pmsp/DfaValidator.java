@@ -44,6 +44,7 @@ public class DfaValidator {
 	public DfaValidator() {
 		ArrayList<String> transitions = new ArrayList<String>();
 		transitions.add(LoginRequest.class.getCanonicalName());
+		transitions.add(LogoffRequest.class.getCanonicalName());
 		dfa.put(STATE_WAIT_FOR_LOGIN, transitions);
 
 		transitions = new ArrayList<String>();
@@ -63,9 +64,6 @@ public class DfaValidator {
 		transitions.add(LogoffRequest.class.getCanonicalName());
 		dfa.put(STATE_WAIT_FOR_FILE_CHOICE, transitions);
 
-//		transitions = new ArrayList<String>();
-//		transitions.add(LogoffRequest.class.getCanonicalName());
-//		dfa.put(STATE_GETTING_FILE, transitions);
 	}
 	
 	/**
