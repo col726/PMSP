@@ -20,6 +20,7 @@ namespace PMSPClient
     {
         //Private fields.
         private string _id;
+        private XmlNode _audioFile;
         private byte[] _mp3;
         private string _mp3TempFileName;
         private string _title;
@@ -31,6 +32,7 @@ namespace PMSPClient
         private bool _isLoaded;
 
         //Public properties.
+        public XmlNode AudioFile { get { return _audioFile; } }
         public string Id { get { return _id; } }
         public string Title { get { return _title; } }
         public Artist Artist { get { return _artist; } }
@@ -103,33 +105,75 @@ namespace PMSPClient
         }
 
         /// <summary>
+        /// Retrieves a track.
+        /// </summary>
+        /// <param name="protocol"></param>
+        /// <returns></returns>
+        public void GetAudioFile(Protocol protocol)
+        {
+            //Declare variables.
+            XmlDocument file = null;
+            _audioFile = null;
+
+            //Attempt to get file.
+            try
+            {
+                //Get file.
+                file = protocol.GetFile(_id);
+
+                //Get audio file.
+                try
+                {
+                    _audioFile = file.SelectSingleNode("//Retrieval/mediaFiles/AudioFile");
+                }
+                catch (Exception ex)
+                {
+                    _exception = ex.Message;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _exception = protocol.Exception;
+            }
+        }
+
+        /// <summary>
         /// Streams a track using the PMSP protocol.
         /// </summary>
         /// <param name="protocol"></param>
         public void Stream(Protocol protocol)
         {
-            //Get audio file.
-            XmlNode audioFile = protocol.GetFile(_id).SelectSingleNode("//Retrieval/mediaFiles/AudioFile");
-
-            //If the audio file is valid per checksum comparison, stream track.
-            if (IsValid(audioFile))
+            //If we have a file, continue.
+            if (_audioFile != null)
             {
-                //Set mp3 byte array.
-                _mp3 = Convert.FromBase64String(audioFile.SelectSingleNode("data/text()").Value);
+                //If the audio file is valid per checksum comparison, stream track.
+                if (IsValid(_audioFile))
+                {
+                    //Set mp3 byte array.
+                    _mp3 = Convert.FromBase64String(_audioFile.SelectSingleNode("data/text()").Value);
 
-                //Write mp3 temp file.
-                _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
-                System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
+                    //Write mp3 temp file.
+                    _mp3TempFileName = String.Format(@"{0}.mp3", Guid.NewGuid());
+                    System.IO.File.WriteAllBytes(_mp3TempFileName, _mp3);
 
-                //Spin play off in a new thread so we can interact with it from the console (i.e. Pause/Stop/Resume).
-                Thread play = new Thread(Play);
-                play.Start();
+                    //Spin play off in a new thread so we can interact with it from the console (i.e. Pause/Stop/Resume).
+                    Thread play = new Thread(Play);
+                    play.Start();
+                }
+
+                //Otherwise, set error.
+                else
+                {
+                    _exception = "The file is corrupted.  Please select another track.";
+                }
             }
 
-            //Otherwise, set error.
+            //If we don't have a file, throw exception.
             else
             {
-                _exception = "The file is corrupted.  Please select another track.";
+                _exception = protocol.Exception;
+                throw new Exception(_exception);
             }
         }
 

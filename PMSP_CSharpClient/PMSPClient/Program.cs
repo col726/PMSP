@@ -46,265 +46,291 @@ namespace PMSPClient
 
             //Write new line.
             Utilities.WriteNewLine();
-
-            //Instantiate Menu object with valid options.
-            var menu = new Menu("Would you like us to search for a PMSP server on the local area network for you?  Enter (y) for yes, (n) for no, or ESC to exit the program:",
-                                new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
-
-            //Write new line.
-            Utilities.WriteNewLine();
-
-            //Instantiate Protocol.
-            Protocol protocol = new Protocol();
-
+            
             //Run.
             while (1 == 1)
             {
-                //Perform specified action.
-                switch (menu.SelectedOption.ToString())
+                //Instantiate Menu object with valid options.
+                var networkMenu = new Menu("Would you like us to search for a PMSP server on the local area network for you?  Enter (y) for yes, (n) for no, or ESC to exit the program:",
+                                    new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
+
+                //Write new line.
+                Utilities.WriteNewLine();
+
+                //Instantiate Protocol.
+                Protocol protocol = new Protocol();
+
+                //Declare exception variable.
+                bool encounteredException = false;
+
+                //Run.
+                while (1 == 1)
                 {
-                    //Auto-discover PMSP server.
-                    case "Y":
-
-                        //Instantiate Menu object with valid options.
-                        var autoDiscoveryMenu = new Menu(String.Concat("PMSP auto-discovery assumes PMSP server(s) have IPv4 addresses, ICMP (ping) enabled, and firewalls configured to allow incoming traffic to port ",
-                            protocol.Server.Port, ".  Do you wish to continue?  Enter (y) for yes, (n) for no, or ESC to exit the program:"),
-                            new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
-
-                        //Run.
-                        while (1 == 1)
-                        {
-                            //Perform specified action.
-                            switch (autoDiscoveryMenu.SelectedOption.ToString())
-                            {
-                                //Auto-discover PMSP server.
-                                case "Y":
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    //Set user credentials.
-                                    protocol.SetCredentials();
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    //Inform user of progress.
-                                    Console.WriteLine("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  Please wait...");
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    //Get list of active IPv4 addresses on LAN.
-                                    List<string> ips = LAN.GetActiveIp4Addresses();
-
-                                    //For each IP in list, attempt PMSP handshake until successful.
-                                    foreach (string ip in ips)
-                                    {
-                                        //Set server ip.
-                                        protocol.Server.HostNameOrIpAddress = ip;
-
-                                        //Attempt handshake
-                                        if (protocol.Authenticate())
-                                        {
-                                            break;
-                                        }
-                                    }
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    //Inform user of auto-discovery result.
-                                    if (protocol.IsAuthenticated)
-                                    {
-                                        Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Unfortunately, we were unable to connect to a PMSP Server on your network.");
-                                    }
-
-                                    //Break.
-                                    break;
-
-                                //Break out of switch.
-                                case "N":
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    break;
-
-                                //Exit program.
-                                case "Escape":
-                                    CleanUp();
-                                    Environment.Exit(0);
-                                    break;
-                            }
-
-                            //Break.
-                            break;
-                        }
-
-                        //Break;
-                        break;
-
-                    //Manually specify PMSP server.
-                    case "N":
-
-                        //Prompt user for PMSP URL.
-                        Console.WriteLine("Please specify the host name (i.e. MyPMSPServer) or IP address (i.e. 192.168.1.4) of the PMSP Server to which you'd like to connect and press ENTER:");
-
-                        //Set PMSP URL.
-                        protocol.Server.Url = Console.ReadLine().Trim();
-
-                        //Write new line.
-                        Utilities.WriteNewLine();
-
-                        //Set user credentials.
-                        protocol.SetCredentials();
-
-                        //Attempt handshake
-                        if (protocol.Authenticate())
-                        {
-                            //Write new line.
-                            Utilities.WriteNewLine();
-
-                            Console.WriteLine("Congratulations!  You have successfully logged in to PMSP Server " + protocol.Server.Url + ".");
-                        }
-                        else
-                        {
-                            //Write new line.
-                            Utilities.WriteNewLine();
-
-                            Console.WriteLine("Unfortunately, we were unable to log you in to PMSP Server " + protocol.Server.Url + ".  " + protocol.Exception);
-                        }
-
-                        //Write new line.
-                        Utilities.WriteNewLine();
-                        
-                        break;
-
-                    //Exit program.
-                    case "Escape":
-                        CleanUp();
-                        Environment.Exit(0);
-                        break;
-                }
-
-                //If we're connected, proceed.
-                if (protocol.IsAuthenticated)
-                {
-                    //Instantiate Menu object with valid options.
-                    menu = new Menu("Would you like to browse artists, genres, or tracks?  Please enter (a) for artists, (g) for genres, (t) for tracks, or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.A, ConsoleKey.G, ConsoleKey.T, ConsoleKey.Escape });
-
-                    //Write new line.
-                    Utilities.WriteNewLine();
-
-                    //Run the program.
-                    while (1 == 1)
+                    //Perform specified action.
+                    switch (networkMenu.SelectedOption.ToString())
                     {
-                        //Initialize variables.
-                        List<Artist> artists;
-                        List<Genre> genres;
-                        List<Track> tracks;
-                        Track selectedTrack = null;
-                        bool encounteredException = false;
+                        //Auto-discover PMSP server.
+                        case "Y":
 
-                        //Perform specified action.
-                        switch (menu.SelectedOption.ToString())
-                        {
-                            //List artists.
-                            case "A":
+                            //Instantiate Menu object with valid options.
+                            var autoDiscoveryMenu = new Menu(String.Concat("PMSP auto-discovery assumes PMSP server(s) have IPv4 addresses, ICMP (ping) enabled, and firewalls configured to allow incoming traffic to port ",
+                                protocol.Server.Port, ".  Do you wish to continue?  Enter (y) for yes, (n) for no, or ESC to exit the program:"),
+                                new List<ConsoleKey> { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape });
 
-                                //Write new line.
-                                Utilities.WriteNewLine();
-
-                                //Get artists.
-                                artists = Artist.GetList(protocol);
-
-                                //If we have artists, list them.
-                                if (artists.Count > 0)
+                            //Run.
+                            while (1 == 1)
+                            {
+                                //Perform specified action.
+                                switch (autoDiscoveryMenu.SelectedOption.ToString())
                                 {
-                                    //List artists.
-                                    Console.WriteLine("Here are the available artists:");
-                                    int artistCount = 1;
-                                    foreach (Artist artist in artists)
-                                    {
-                                        Console.WriteLine(artistCount.ToString() + "." + "  " + artist.Name);
-                                        artistCount++;
-                                    }
+                                    //Auto-discover PMSP server.
+                                    case "Y":
 
-                                    //Run.
-                                    while (1 == 1)
-                                    {
                                         //Write new line.
                                         Utilities.WriteNewLine();
 
-                                        //Get selected artist.
-                                        Console.WriteLine("Please enter the number of the artist of whom you'd like to listen:");
+                                        //Set user credentials.
+                                        protocol.SetCredentials();
 
-                                        try
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+
+                                        //Inform user of progress.
+                                        Console.WriteLine("PMSP auto-discovery is now in progress.  This may take a few minutes to complete.  Please wait...");
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+
+                                        //Get list of active IPv4 addresses on LAN.
+                                        List<string> ips = LAN.GetActiveIp4Addresses();
+
+                                        //For each IP in list, attempt PMSP handshake until successful.
+                                        foreach (string ip in ips)
                                         {
-                                            //Get artist from list.
-                                            Artist selectedArtist = null;
+                                            //Set server ip.
+                                            protocol.Server.HostNameOrIpAddress = ip;
+
+                                            //Attempt handshake
+                                            if (protocol.Authenticate())
+                                            {
+                                                break;
+                                            }
+                                        }
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+
+                                        //Inform user of auto-discovery result.
+                                        if (protocol.IsAuthenticated)
+                                        {
+                                            Console.WriteLine("Congratulations!  You have successfully connected to PMSP Server " + protocol.Server.Url + ".");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Unfortunately, we were unable to connect to a PMSP Server on your network.");
+                                        }
+
+                                        //Break.
+                                        break;
+
+                                    //Break out of switch.
+                                    case "N":
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+
+                                        break;
+
+                                    //Exit program.
+                                    case "Escape":
+                                        CleanUp();
+                                        Environment.Exit(0);
+                                        break;
+                                }
+
+                                //Break.
+                                break;
+                            }
+
+                            //Break;
+                            break;
+
+                        //Manually specify PMSP server.
+                        case "N":
+
+                            //Prompt user for PMSP URL.
+                            Console.WriteLine("Please specify the host name (i.e. MyPMSPServer) or IP address (i.e. 192.168.1.4) of the PMSP Server to which you'd like to connect and press ENTER:");
+
+                            //Set PMSP URL.
+                            protocol.Server.Url = Console.ReadLine().Trim();
+
+                            //Write new line.
+                            Utilities.WriteNewLine();
+
+                            //Set user credentials.
+                            protocol.SetCredentials();
+
+                            //Attempt handshake
+                            if (protocol.Authenticate())
+                            {
+                                //Write new line.
+                                Utilities.WriteNewLine();
+
+                                Console.WriteLine("Congratulations!  You have successfully logged in to PMSP Server " + protocol.Server.Url + ".");
+                            }
+                            else
+                            {
+                                //Write new line.
+                                Utilities.WriteNewLine();
+
+                                //Inform user.
+                                Console.WriteLine("Unfortunately, we were unable to log you in to PMSP Server " + protocol.Server.Url + ".  " + protocol.Exception);
+                            }
+
+                            //Write new line.
+                            Utilities.WriteNewLine();
+
+                            break;
+
+                        //Exit program.
+                        case "Escape":
+                            CleanUp();
+                            Environment.Exit(0);
+                            break;
+                    }
+
+                    //If we're authenticated, proceed.
+                    if (protocol.IsAuthenticated)
+                    {
+                        //Instantiate Menu object with valid options.
+                        var mainMenu = new Menu("Would you like to browse artists, genres, or tracks?  Please enter (a) for artists, (g) for genres, (l) to logout or ESC to logout and exit the program:", new List<ConsoleKey> { ConsoleKey.A, ConsoleKey.G, ConsoleKey.T, ConsoleKey.L, ConsoleKey.Escape });
+
+                        //Write new line.
+                        Utilities.WriteNewLine();
+
+                        //Run the program.
+                        while (1 == 1)
+                        {
+                            //Initialize variables.
+                            List<Artist> artists;
+                            List<Genre> genres;
+                            List<Track> tracks;
+                            Track selectedTrack = null;
+
+                            //Perform specified action.
+                            switch (mainMenu.SelectedOption.ToString())
+                            {
+                                //List artists.
+                                case "A":
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Get artists.
+                                    artists = Artist.GetList(protocol);
+
+                                    //If we're still authenticated and have artists, list them.
+                                    if (protocol.IsAuthenticated && artists.Count > 0)
+                                    {
+                                        //List artists.
+                                        Console.WriteLine("Here are the available artists:");
+                                        int artistCount = 1;
+                                        foreach (Artist artist in artists)
+                                        {
+                                            Console.WriteLine(artistCount.ToString() + "." + "  " + artist.Name);
+                                            artistCount++;
+                                        }
+
+                                        //Run.
+                                        while (1 == 1)
+                                        {
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            //Get selected artist.
+                                            Console.WriteLine("Please enter the number of the artist of whom you'd like to listen:");
+
                                             try
                                             {
-                                                //Set selected artist.
-                                                selectedArtist = artists[Convert.ToInt32(Console.ReadLine()) - 1];
-
-                                                //Ensure selection is valid before proceeding.
-                                                if (selectedArtist != null)
+                                                //Get artist from list.
+                                                Artist selectedArtist = null;
+                                                try
                                                 {
-                                                    //Write new line.
-                                                    Utilities.WriteNewLine();
+                                                    //Set selected artist.
+                                                    selectedArtist = artists[Convert.ToInt32(Console.ReadLine()) - 1];
 
-                                                    //Get tracks.
-                                                    selectedArtist.Tracks = Track.GetList(protocol, ListType.Artist, selectedArtist.Name);
-
-                                                    //List tracks.
-                                                    Console.WriteLine("Here are the available tracks for " + selectedArtist.Name + ":");
-                                                    int trackCount = 1;
-                                                    foreach (Track track in selectedArtist.Tracks)
-                                                    {
-                                                        Console.WriteLine(trackCount.ToString() + "." + "  " + track.Title);
-                                                        trackCount++;
-                                                    }
-
-                                                    //Write new line.
-                                                    Utilities.WriteNewLine();
-
-                                                    //Run.
-                                                    while (1 == 1)
+                                                    //Ensure selection is valid before proceeding.
+                                                    if (selectedArtist != null)
                                                     {
                                                         //Write new line.
                                                         Utilities.WriteNewLine();
 
-                                                        //Get selected track.
-                                                        Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
+                                                        //Get tracks.
+                                                        selectedArtist.Tracks = Track.GetList(protocol, ListType.Artist, selectedArtist.Name);
 
-                                                        //Get track from list.
-                                                        try
+                                                        //If we're still authenticated and have tracks, list them.
+                                                        if (protocol.IsAuthenticated && selectedArtist.Tracks.Count > 0)
                                                         {
-                                                            //Set selected track.
-                                                            selectedTrack = selectedArtist.Tracks[Convert.ToInt32(Console.ReadLine()) - 1];
+                                                            //List tracks.
+                                                            Console.WriteLine("Here are the available tracks for " + selectedArtist.Name + ":");
+                                                            int trackCount = 1;
+                                                            foreach (Track track in selectedArtist.Tracks)
+                                                            {
+                                                                Console.WriteLine(trackCount.ToString() + "." + "  " + track.Title);
+                                                                trackCount++;
+                                                            }
 
-                                                            //Break;
+                                                            //Write new line.
+                                                            Utilities.WriteNewLine();
+
+                                                            //Run.
+                                                            while (1 == 1)
+                                                            {
+                                                                //Write new line.
+                                                                Utilities.WriteNewLine();
+
+                                                                //Get selected track.
+                                                                Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
+
+                                                                //Get track from list.
+                                                                try
+                                                                {
+                                                                    //Set selected track.
+                                                                    selectedTrack = selectedArtist.Tracks[Convert.ToInt32(Console.ReadLine()) - 1];
+
+                                                                    //Break;
+                                                                    break;
+                                                                }
+                                                                catch (Exception ex)
+                                                                {
+                                                                    Console.WriteLine("The track you entered was invalid.  Please try again.");
+                                                                }
+                                                            }
+
+                                                        }
+
+                                                        //If we're not authenticated or don't have artists, inform user.
+                                                        else
+                                                        {
+                                                            //We got here because of an exception.
+                                                            encounteredException = true;
+
+                                                            //Logout.
+                                                            goto case "L";
+                                                        }
+
+                                                        //Break out if we have a selected track.
+                                                        if (selectedTrack != null)
+                                                        {
                                                             break;
                                                         }
-                                                        catch (Exception ex)
-                                                        {
-                                                            Console.WriteLine("The track you entered was invalid.  Please try again.");
-                                                        }
                                                     }
-
-                                                    //Break out if we have a selected track.
-                                                    if (selectedTrack != null)
+                                                    else
                                                     {
-                                                        break;
+                                                        Console.WriteLine("The artist you entered was invalid.");
                                                     }
                                                 }
-                                                else
+                                                catch (Exception ex)
                                                 {
                                                     Console.WriteLine("The artist you entered was invalid.");
                                                 }
@@ -314,113 +340,131 @@ namespace PMSPClient
                                                 Console.WriteLine("The artist you entered was invalid.");
                                             }
                                         }
-                                        catch (Exception ex)
+                                    }
+
+                                    //If we're not authenticated or don't have artists, inform user and log out.
+                                    else
+                                    {
+                                        //We got here because of an exception.
+                                        encounteredException = true;
+
+                                        //Logout.
+                                        goto case "L";
+                                    }
+
+                                    break;
+
+                                //List genres.
+                                case "G":
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Get genres.
+                                    genres = Genre.GetList(protocol);
+
+                                    //If we're still authenticated and have genres, list them.
+                                    if (protocol.IsAuthenticated && genres.Count > 0)
+                                    {
+                                        //List genres.
+                                        Console.WriteLine("Here are the available genres:");
+                                        int genreCount = 1;
+                                        foreach (Genre genre in genres)
                                         {
-                                            Console.WriteLine("The artist you entered was invalid.");
+                                            Console.WriteLine(genreCount.ToString() + "." + "  " + genre.Name);
+                                            genreCount++;
                                         }
-                                    }
-                                }
 
-                                //If we don't have artists, inform user.
-                                else
-                                {
-                                    encounteredException = true;
-                                    Console.WriteLine("Unfortunately, there were no artists found due to the following error: " + protocol.Exception);
-                                }
-
-                                break;
-
-                            //List genres.
-                            case "G":
-
-                                //Write new line.
-                                Utilities.WriteNewLine();
-
-                                //Get genres.
-                                genres = Genre.GetList(protocol);
-
-                                //If we have genres, list them.
-                                if (genres.Count > 0)
-                                {
-                                    //List genres.
-                                    Console.WriteLine("Here are the available genres:");
-                                    int genreCount = 1;
-                                    foreach (Genre genre in genres)
-                                    {
-                                        Console.WriteLine(genreCount.ToString() + "." + "  " + genre.Name);
-                                        genreCount++;
-                                    }
-
-                                    //Run.
-                                    while (1 == 1)
-                                    {
-                                        //Write new line.
-                                        Utilities.WriteNewLine();
-
-                                        //Get selected genre.
-                                        Console.WriteLine("Please enter the number of the genre of which you'd like to listen:");
-
-                                        try
+                                        //Run.
+                                        while (1 == 1)
                                         {
-                                            //Get genre from list.
-                                            Genre selectedGenre = null;
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            //Get selected genre.
+                                            Console.WriteLine("Please enter the number of the genre of which you'd like to listen:");
+
                                             try
                                             {
-                                                //Set selected genre.
-                                                selectedGenre = genres[Convert.ToInt32(Console.ReadLine()) - 1];
-
-                                                //Ensure selection is valid before proceeding.
-                                                if (selectedGenre != null)
+                                                //Get genre from list.
+                                                Genre selectedGenre = null;
+                                                try
                                                 {
-                                                    //Write new line.
-                                                    Utilities.WriteNewLine();
+                                                    //Set selected genre.
+                                                    selectedGenre = genres[Convert.ToInt32(Console.ReadLine()) - 1];
 
-                                                    //Get tracks.
-                                                    selectedGenre.Tracks = Track.GetList(protocol, ListType.Genre, selectedGenre.Name);
-
-                                                    //List tracks.
-                                                    Console.WriteLine("Here are the available tracks for the " + selectedGenre.Name + " genre:");
-                                                    int trackCount = 1;
-                                                    foreach (Track track in selectedGenre.Tracks)
-                                                    {
-                                                        Console.WriteLine(trackCount.ToString() + "." + "  " + track.Title + " by " + track.Artist.Name);
-                                                        trackCount++;
-                                                    }
-
-                                                    //Write new line.
-                                                    Utilities.WriteNewLine();
-
-                                                    //Run.
-                                                    while (1 == 1)
+                                                    //Ensure selection is valid before proceeding.
+                                                    if (selectedGenre != null)
                                                     {
                                                         //Write new line.
                                                         Utilities.WriteNewLine();
 
-                                                        //Get selected track.
-                                                        Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
+                                                        //Get tracks.
+                                                        selectedGenre.Tracks = Track.GetList(protocol, ListType.Genre, selectedGenre.Name);
 
-                                                        //Get track from list.
-                                                        try
+                                                        //If we're still authenticated and have tracks, list them.
+                                                        if (protocol.IsAuthenticated && selectedGenre.Tracks.Count > 0)
                                                         {
-                                                            //Set selected track.
-                                                            selectedTrack = selectedGenre.Tracks[Convert.ToInt32(Console.ReadLine()) - 1];
 
-                                                            //Break;
+                                                            //List tracks.
+                                                            Console.WriteLine("Here are the available tracks for the " + selectedGenre.Name + " genre:");
+                                                            int trackCount = 1;
+                                                            foreach (Track track in selectedGenre.Tracks)
+                                                            {
+                                                                Console.WriteLine(trackCount.ToString() + "." + "  " + track.Title + " by " + track.Artist.Name);
+                                                                trackCount++;
+                                                            }
+
+                                                            //Write new line.
+                                                            Utilities.WriteNewLine();
+
+                                                            //Run.
+                                                            while (1 == 1)
+                                                            {
+                                                                //Write new line.
+                                                                Utilities.WriteNewLine();
+
+                                                                //Get selected track.
+                                                                Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
+
+                                                                //Get track from list.
+                                                                try
+                                                                {
+                                                                    //Set selected track.
+                                                                    selectedTrack = selectedGenre.Tracks[Convert.ToInt32(Console.ReadLine()) - 1];
+
+                                                                    //Break;
+                                                                    break;
+                                                                }
+                                                                catch (Exception ex)
+                                                                {
+                                                                    Console.WriteLine("The track you entered was invalid.  Please try again.");
+                                                                }
+                                                            }
+                                                        }
+
+                                                        //If we're not authenticated or don't have artists, inform user.
+                                                        else
+                                                        {
+                                                            //We got here because of an exception.
+                                                            encounteredException = true;
+
+                                                            //Logout.
+                                                            goto case "L";
+                                                        }
+
+                                                        //Break out if we have a selected track.
+                                                        if (selectedTrack != null)
+                                                        {
                                                             break;
                                                         }
-                                                        catch (Exception ex)
-                                                        {
-                                                            Console.WriteLine("The track you entered was invalid.  Please try again.");
-                                                        }
                                                     }
-
-                                                    //Break out if we have a selected track.
-                                                    if (selectedTrack != null)
+                                                    else
                                                     {
-                                                        break;
+                                                        Console.WriteLine("The genre you entered was invalid.");
                                                     }
                                                 }
-                                                else
+                                                catch (Exception ex)
                                                 {
                                                     Console.WriteLine("The genre you entered was invalid.");
                                                 }
@@ -430,182 +474,210 @@ namespace PMSPClient
                                                 Console.WriteLine("The genre you entered was invalid.");
                                             }
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            Console.WriteLine("The genre you entered was invalid.");
-                                        }
                                     }
-                                }
 
-                                //If we don't have genres, inform user.
-                                else
-                                {
-                                    encounteredException = true;
-                                    Console.WriteLine("Unfortunately, there were no genres found due to the following error: " + protocol.Exception);
-                                }
-
-                                break;
-
-                            //List tracks.
-                            case "T":
-
-                                //Get all tracks.
-                                tracks = Track.GetList(protocol, ListType.Track, null);
-
-                                //Write new line.
-                                Utilities.WriteNewLine();
-
-                                //Inform user of available tracks.
-                                if (tracks.Count > 0)
-                                {
-                                    Console.WriteLine("Here are the available tracks:");
-
-                                    foreach (Track track in tracks)
+                                    //If we're not authenticated or don't have genres, inform user and logout.
+                                    else
                                     {
-                                        Console.WriteLine(track.Id + ". " + track.Title + " by " + track.Artist.Name);
-                                    }
-                                }
+                                        //We got here because of an exception.
+                                        encounteredException = true;
 
-                                //Run.
-                                while (1 == 1)
+                                        //Logout.
+                                        goto case "L";
+                                    }
+
+                                    break;
+
+                                //Logout.
+                                case "L":
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //If we got here due to an exception.
+                                    if (encounteredException)
+                                    {
+                                        Console.WriteLine("Unfortunately, the application has encountered the following exception: " + protocol.Exception);
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+                                    }
+
+                                    //Force logout
+                                    protocol.Logout();
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    //Only inform user if our session hasn't expired.
+                                    Console.WriteLine("You are now logged out of server " + protocol.Server.Url + ".");
+
+                                    //Write new line.
+                                    Utilities.WriteNewLine();
+
+                                    break;
+
+                                //Exit program.
+                                case "Escape":
+                                    protocol.Logout();
+                                    CleanUp();
+                                    Environment.Exit(0);
+                                    break;
+                            }
+
+                            //If we're still authenticated, proceed.
+                            if (protocol.IsAuthenticated)
+                            {
+                                //If we haven't encountered an error, proceed.
+                                if (!encounteredException)
                                 {
                                     //Write new line.
                                     Utilities.WriteNewLine();
 
-                                    //Get selected track.
-                                    Console.WriteLine("Please enter the number of the track of which you'd like to listen:");
-
-                                    //Get track from list.
+                                    //Stream selected track.
                                     try
                                     {
-                                        selectedTrack = tracks[Convert.ToInt32(Console.ReadLine()) - 1];
-                                        break;
+                                        //Inform user of track retrieval.
+                                        Console.WriteLine("Retrieving track, please wait...");
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
+
+                                        //Retrieve audio file.
+                                        selectedTrack.GetAudioFile(protocol);
+
+                                        //If we're still authenticated and have an audio file, continue.
+                                        if (protocol.IsAuthenticated && selectedTrack.AudioFile != null)
+                                        {
+                                            //Stream track
+                                            selectedTrack.Stream(protocol);
+
+                                            //Put thread to sleep until the track is loaded.
+                                            while (!selectedTrack.IsLoaded)
+                                            {
+                                                Thread.Sleep(100);
+                                            }
+
+                                            //If the track is playing, inform user.
+                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                            {
+                                                //Inform user of title and artist.
+                                                Console.WriteLine("Now streaming " + selectedTrack.Title + " by " + selectedTrack.Artist.Name + "...");
+
+                                                //Write new line.
+                                                Utilities.WriteNewLine();
+
+                                                //Instantiate Menu object with valid options.
+                                                Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to log out and exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
+
+                                                //Run.
+                                                while (1 == 1)
+                                                {
+                                                    //Perform specified action.
+                                                    switch (playbackMenu.SelectedOption.ToString())
+                                                    {
+                                                        //Stop track
+                                                        case "S":
+
+                                                            //Stop track
+                                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                                            {
+                                                                selectedTrack.Stop();
+                                                            }
+                                                            break;
+
+                                                        //Exit program.
+                                                        case "Escape":
+
+                                                            //Stop track
+                                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                                            {
+                                                                selectedTrack.Stop();
+                                                            }
+
+                                                            CleanUp();
+                                                            Environment.Exit(0);
+                                                            break;
+                                                    }
+
+                                                    break;
+                                                }
+                                                //Write new line.
+                                                Utilities.WriteNewLine();
+                                            }
+                                        }
+
+                                        //We got here because of an error, logout.
+                                        else
+                                        {
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            //Inform user.
+                                            Console.WriteLine("Unfortunately, the application has encountered the following exception: " + protocol.Exception);
+
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            //Force logout
+                                            protocol.Logout();
+
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            //Inform user of logout state.
+                                            Console.WriteLine("You are now logged out of server " + protocol.Server.Url + ".");
+
+                                            //Write new line.
+                                            Utilities.WriteNewLine();
+
+                                            break;
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
-                                        Console.WriteLine("The track you entered was invalid.  Please try again.");
+                                        //Inform user and append exception.
+                                        Console.WriteLine("Unfortunately, we were unable to stream the track you selected due to the following reason:  " + selectedTrack.Exception);
+
+                                        //Write new line.
+                                        Utilities.WriteNewLine();
                                     }
                                 }
-
-                                //Break.
-                                break;
-
-                            //Exit program.
-                            case "Escape":
-                                CleanUp();
-                                Environment.Exit(0);
-                                break;
-                        }
-
-                        //If we haven't encountered an exception, attempt to stream track.
-                        if (!encounteredException)
-                        {
-                            //Write new line.
-                            Utilities.WriteNewLine();
-
-                            //Stream selected track.
-                            try
-                            {
-                                //Inform user of track retrieval.
-                                Console.WriteLine("Retrieving track, please wait...");
 
                                 //Write new line.
                                 Utilities.WriteNewLine();
 
-                                //Stream track
-                                selectedTrack.Stream(protocol);
-
-                                //Put thread to sleep until the track is loaded.
-                                while (!selectedTrack.IsLoaded)
-                                {
-                                    Thread.Sleep(100);
-                                }
-
-                                //If the track is playing, inform user.
-                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                {
-                                    //Inform user of title and artist.
-                                    Console.WriteLine("Now streaming " + selectedTrack.Title + " by " + selectedTrack.Artist.Name + "...");
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-
-                                    //Instantiate Menu object with valid options.
-                                    Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
-
-                                    //Run.
-                                    while (1 == 1)
-                                    {
-                                        //Perform specified action.
-                                        switch (playbackMenu.SelectedOption.ToString())
-                                        {
-                                            //Stop track
-                                            case "S":
-
-                                                //Stop track
-                                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                                {
-                                                    selectedTrack.Stop();
-                                                }
-                                                break;
-
-                                            //Exit program.
-                                            case "Escape":
-
-                                                //Stop track
-                                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                                {
-                                                    selectedTrack.Stop();
-                                                }
-
-                                                CleanUp();
-                                                Environment.Exit(0);
-                                                break;
-                                        }
-
-                                        break;
-                                    }
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-                                }
-
-                                //If the track isn't playing, inform user.
-                                else
-                                {
-                                    //Inform user and append exception.
-                                    Console.WriteLine("Unfortunately, we were unable to stream the track you selected due to the following reason: " + selectedTrack.Exception);
-
-                                    //Write new line.
-                                    Utilities.WriteNewLine();
-                                }
+                                //set next selected option
+                                mainMenu.SetSelectedOption();
                             }
-                            catch (Exception ex)
-                            {
-                                //Inform user and append exception.
-                                Console.WriteLine("Unfortunately, we were unable to stream the track you selected due to an unspecified error.");
 
-                                //Write new line.
-                                Utilities.WriteNewLine();
+                            //If we're logging out, break.
+                            if (!protocol.IsAuthenticated)
+                            {
+                                break;
                             }
                         }
+                    }
 
+                    //Logout.
+                    else
+                    {
                         //Write new line.
                         Utilities.WriteNewLine();
 
-                        //set next selected option
-                        menu.SetSelectedOption();
+                        //Logout.
+                        protocol.Logout();
+
+                        //Break.
+                        break;
+                    }
+
+                    //If we're not authenticated here, break.
+                    if (!protocol.IsAuthenticated)
+                    {
+                        break;
                     }
                 }
-
-                //Invalid login.
-                else
-                {
-                    //Prompt user for next action.
-                    menu.SetSelectedOption();
-                }
-
-                //Write new line.
-                Utilities.WriteNewLine();
             }
         }
 

@@ -9,3 +9,14 @@ C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\poli
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\taglib-sharp.dll
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\NAudio.xml
 C:\Users\Owner\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.config
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\PMSPClient.exe.config
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\PMSPClient.exe
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\obj\x86\Debug\PMSPClient.pdb
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\PMSPClient.exe
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\PMSPClient.pdb
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\NAudio.dll
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\NAudio.WindowsMediaFormat.dll
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.dll
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\taglib-sharp.dll
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\NAudio.xml
+C:\Users\Admin\Documents\GitHub\PMSP\PMSP_CSharpClient\PMSPClient\bin\Debug\policy.2.0.taglib-sharp.config

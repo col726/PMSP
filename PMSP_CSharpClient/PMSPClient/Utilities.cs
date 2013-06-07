@@ -76,16 +76,24 @@ namespace PMSPClient
         /// <param name="setCookie"></param>
         /// <param name="cookieToGet"></param>
         /// <returns></returns>
-        public static string GetCookieFromHeader(string setCookie, string cookieToGet)
+        public static string GetCookieFromHeader(string setCookie, string cookieToGet, int cookieFoundNumber)
         {
             string[] cookies = setCookie.Split(new Char[] { ',', ';' });
             string selectedCookie = "";
+            int currentFoundCookieNumber = 1;
             foreach (string cookie in cookies)
             {
                 if (cookie.Contains(cookieToGet))
                 {
-                    selectedCookie = cookie;
-                    break;
+                    if (cookieFoundNumber == currentFoundCookieNumber)
+                    {
+                        selectedCookie = cookie;
+                        break;
+                    }
+                    else
+                    {
+                        currentFoundCookieNumber++;
+                    }
                 }
             }
             return selectedCookie;

@@ -24,6 +24,7 @@ namespace PMSPClient
         private XmlDocument _requestData;
         private XmlDocument _response = new XmlDocument();
         private string _exception;
+        private Status _status = Status.OK;
 
         //Public properties.
         public string HostNameOrIpAddress { get { return _hostNameOrIpAddress; } set { _hostNameOrIpAddress = value; _url = "http://" + value + ":" + _port; } }
@@ -33,6 +34,7 @@ namespace PMSPClient
         public XmlDocument RequestData { get { return _requestData; } }
         public XmlDocument Response { get { return _response; } }
         public string Exception { get { return _exception; } }
+        public Status Status { get { return _status; } set { _status = value; } }
 
         /// <summary>
         /// Main constructor.
@@ -46,7 +48,7 @@ namespace PMSPClient
         /// <summary>
         /// Creates a new web request with default parameters.
         /// </summary>
-        public void CreateRequest()
+        public void CreateRequest(DfaState currentClientDfaState, string sessionId)
         {
             //Instantiate new web request.
             _request = (HttpWebRequest)WebRequest.Create(_url);
@@ -58,6 +60,17 @@ namespace PMSPClient
             _request.Method = "POST";
             _request.ContentType = "application/xml";
             _request.Accept = "application/xml";
+
+            //Specify current dfa state and add as cookie.
+            _request.CookieContainer = new CookieContainer();
+
+            //Set DFA status cookie and add to request.
+            Cookie currentClientDfaStateCookie = new Cookie(Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[0], Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[1]);
+            _request.CookieContainer.Add(new Uri(_url), currentClientDfaStateCookie);
+
+            //Set session id cookie and add to request.
+            Cookie sessionIdCookie = new Cookie(sessionId.Split('=')[0], sessionId.Split('=')[1]);
+            _request.CookieContainer.Add(new Uri(_url), sessionIdCookie);
 
             //New data request.
             _requestData = new XmlDocument();
@@ -77,35 +90,15 @@ namespace PMSPClient
         /// <param name="url"></param>
         /// <param name="userName"></param>
         /// <param name="password"></param>
-        public void CreateRequest(string userName, string password)
+        public void CreateRequest(DfaState currentClientDfaState, string sessionId, string userName, string password)
         {
             //Create request.
-            CreateRequest();
+            CreateRequest(currentClientDfaState, sessionId);
 
             //Specify credentials
             string credentials = userName + ":" + password;
             credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
             _request.Headers["Authorization"] = "Basic " + credentials;
-        }
-
-        /// <summary>
-        /// Creates a new request with a cookie.
-        /// </summary>
-        /// <param name="sessionId"></param>
-        public void CreateRequest(DfaState currentClientDfaState, string sessionId)
-        {
-            //Create request.
-            CreateRequest();
-
-            //Specify current dfa state & session id.
-            Cookie sessionIdCookie = new Cookie(sessionId.Split('=')[0], sessionId.Split('=')[1]);
-            Cookie stateCookie = new Cookie(Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[0], Utilities.GetEnumDescriptionFromValue(currentClientDfaState).Split('=')[1]);
-            CookieCollection cc = new CookieCollection();
-            cc.Add(sessionIdCookie);
-            cc.Add(stateCookie);
-            _request.CookieContainer = new CookieContainer();
-            _request.CookieContainer.Add(new Uri(_url), sessionIdCookie);
-            _request.CookieContainer.Add(new Uri(_url), stateCookie);
         }
 
         /// <summary>
@@ -164,12 +157,64 @@ namespace PMSPClient
         /// <returns></returns>
         private void HandleException(WebException exception)
         {
+            //If we have a protocol error, handle independently of other errors.
             if (exception.Status == WebExceptionStatus.ProtocolError)
             {
+                //Get the response.
                 var response = exception.Response as HttpWebResponse;
+
+                //The the response is not null, set status code.
                 if (response != null)
                 {
-                    _exception = response.StatusDescription;
+                    try
+                    {
+                        //Set status code.
+                        _status = (Status)response.StatusCode;
+
+                        //Set exception.
+                        switch (_status)
+                        {
+                            //Bad request.
+                            case Status.BadRequest:
+                                break;
+
+                            //Unauthorized.
+                            case Status.Unauthorized:
+                                _exception += "The credentials you submitted were invalid.  ";
+                                break;
+
+                            //InvalidStateTransition.
+                            case Status.InvalidStateTransition:
+                                break;
+
+                            //NotImplemented
+                            case Status.InternalServerError:
+                                break;
+
+                            //NotImplemented
+                            case Status.NotImplemented:
+                                break;
+                        }
+
+                        //Append server status description.
+                        _exception += "The server returned an error:  Status code " + (int)_status + ": " + _status + ".";
+
+                        //Append status description if it's not the same as the status itself.
+                        if (response.StatusDescription != _status.ToString())
+                        {
+                            _exception += "  " + response.StatusDescription;
+                        }
+
+                        //Append period if there isn't one.
+                        if (_exception.Substring(_exception.Length - 1, 1) != ".")
+                        {
+                            _exception += ".";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _exception = response.StatusDescription;
+                    }
                 }
                 else
                 {

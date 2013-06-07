@@ -32,7 +32,7 @@ namespace PMSPClient
             //Instantiate artist list.
             List<Artist> artists = new List<Artist>();
 
-            //If we have artists, insert them.
+            //Get artists and insert them.
             try
             {
                 //Drill down through child nodes to get artist listings.

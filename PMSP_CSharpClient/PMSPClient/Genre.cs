@@ -31,7 +31,7 @@ namespace PMSPClient
             //Instantiate genre list.
             List<Genre> genres = new List<Genre>();
 
-            //If we have genres, insert them.
+            //Get genres and insert them.
             try
             {
                 //Drill down through child nodes to get genre listings.
