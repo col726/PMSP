@@ -99,7 +99,9 @@ public class RequestHandler implements Container {
 
 			
 			//the client should either have both cookies (logged in) or neither cookie (not logged in)
-			if ((sessionCookie != null && stateCookie == null) || (sessionCookie == null && stateCookie != null)) {
+			//if it's a login request then we can allow one to be missing but not the other.
+			if (!(op.getType() instanceof LoginRequest) && 
+					((sessionCookie != null && stateCookie == null) || (sessionCookie == null && stateCookie != null))) {
 				response.setStatus(Status.BAD_REQUEST);
 				response.setDescription("Invalid pmsp cookie pair.  Clear pmsp cookies and try again?");
 				
