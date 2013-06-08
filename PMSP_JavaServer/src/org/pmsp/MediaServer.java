@@ -244,7 +244,10 @@ public class MediaServer {
 		connection = new SocketConnection(server);
 		
 		//default to the wildcard ip and port 31415 but both can be overridden in the config file
+		//CLIENT - the host the client will need to connect to depends on the setting of this value
 		String host = props.getProperty(LISTEN_HOST_KEY);
+
+		//SERVICE - the port the client will need to connect to depends on this value
 		int port = Integer.parseInt(props.getProperty(LISTEN_PORT_KEY));
 		SocketAddress address = new InetSocketAddress(host, port);
 
