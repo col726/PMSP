@@ -549,61 +549,70 @@ namespace PMSPClient
                                         //If we're still authenticated and have an audio file, continue.
                                         if (protocol.IsAuthenticated && selectedTrack.AudioFile != null)
                                         {
-                                            //Stream track
-                                            selectedTrack.Stream(protocol);
-
-                                            //Put thread to sleep until the track is loaded.
-                                            while (!selectedTrack.IsLoaded)
+                                            //Validate track.
+                                            if (selectedTrack.Validate())
                                             {
-                                                Thread.Sleep(100);
-                                            }
+                                                //Stream track.
+                                                selectedTrack.Stream(protocol);
 
-                                            //If the track is playing, inform user.
-                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                            {
-                                                //Inform user of title and artist.
-                                                Console.WriteLine("Now streaming " + selectedTrack.Title + " by " + selectedTrack.Artist.Name + "...");
-
-                                                //Write new line.
-                                                Utilities.WriteNewLine();
-
-                                                //Instantiate Menu object with valid options.
-                                                Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to log out and exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
-
-                                                //Run.
-                                                while (1 == 1)
+                                                //Put thread to sleep until the track is loaded.
+                                                while (!selectedTrack.IsLoaded)
                                                 {
-                                                    //Perform specified action.
-                                                    switch (playbackMenu.SelectedOption.ToString())
-                                                    {
-                                                        //Stop track
-                                                        case "S":
-
-                                                            //Stop track
-                                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                                            {
-                                                                selectedTrack.Stop();
-                                                            }
-                                                            break;
-
-                                                        //Exit program.
-                                                        case "Escape":
-
-                                                            //Stop track
-                                                            if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
-                                                            {
-                                                                selectedTrack.Stop();
-                                                            }
-
-                                                            CleanUp();
-                                                            Environment.Exit(0);
-                                                            break;
-                                                    }
-
-                                                    break;
+                                                    Thread.Sleep(100);
                                                 }
-                                                //Write new line.
-                                                Utilities.WriteNewLine();
+
+                                                //If the track is playing, inform user.
+                                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                                {
+                                                    //Inform user of title and artist.
+                                                    Console.WriteLine("Now streaming " + selectedTrack.Title + " by " + selectedTrack.Artist.Name + "...");
+
+                                                    //Write new line.
+                                                    Utilities.WriteNewLine();
+
+                                                    //Instantiate Menu object with valid options.
+                                                    Menu playbackMenu = new Menu("Enter (s) to stop playback or ESC to log out and exit the program:", new List<ConsoleKey> { ConsoleKey.S, ConsoleKey.Escape });
+
+                                                    //Run.
+                                                    while (1 == 1)
+                                                    {
+                                                        //Perform specified action.
+                                                        switch (playbackMenu.SelectedOption.ToString())
+                                                        {
+                                                            //Stop track
+                                                            case "S":
+
+                                                                //Stop track
+                                                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                                                {
+                                                                    selectedTrack.Stop();
+                                                                }
+                                                                break;
+
+                                                            //Exit program.
+                                                            case "Escape":
+
+                                                                //Stop track
+                                                                if (selectedTrack.Audio.PlaybackState == PlaybackState.Playing)
+                                                                {
+                                                                    selectedTrack.Stop();
+                                                                }
+
+                                                                CleanUp();
+                                                                Environment.Exit(0);
+                                                                break;
+                                                        }
+
+                                                        break;
+                                                    }
+                                                    //Write new line.
+                                                    Utilities.WriteNewLine();
+                                                }
+                                            }
+                                            //Invalid track.
+                                            else
+                                            {
+                                                Console.WriteLine("The selected track is corrupted.  Please make another selection.");
                                             }
                                         }
 
