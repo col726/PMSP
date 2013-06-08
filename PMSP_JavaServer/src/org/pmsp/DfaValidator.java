@@ -49,7 +49,6 @@ public class DfaValidator {
 
 		transitions = new ArrayList<String>();
 		transitions.add(MetadataListRequest.class.getCanonicalName());
-		transitions.add(FileListRequest.class.getCanonicalName());
 		transitions.add(LogoffRequest.class.getCanonicalName());
 		dfa.put(STATE_IDLE, transitions);
 
