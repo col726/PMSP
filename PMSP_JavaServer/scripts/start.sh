@@ -5,7 +5,7 @@ PMSP_DIR=..
 
 cd $PMSP_DIR
 
-nohup java -Xmx1024m -classpath "./lib/*" -Dpmsp.server=true  org.pmsp.MediaServer </dev/null >server.out 2>&1 &
+nohup java -Xmx1024m -classpath "./dist/*:./lib/*" -Dpmsp.server=true  org.pmsp.MediaServer </dev/null >server.out 2>&1 &
 
 sleep 1
 

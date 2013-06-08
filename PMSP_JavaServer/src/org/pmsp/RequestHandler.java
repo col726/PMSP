@@ -96,7 +96,6 @@ public class RequestHandler implements Container {
 			MessageParser mp = new MessageParser();
 			Operation op = mp.parse(request.getContent());
 			
-
 			
 			//the client should either have both cookies (logged in) or neither cookie (not logged in)
 			//if it's a login request then we can allow one to be missing but not the other.
