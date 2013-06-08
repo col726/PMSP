@@ -144,7 +144,7 @@ public class MediaServer {
 	 */
 	public static java.sql.Connection getDbConnection() throws SQLException {
 		//use the DAT_DIR setting as the loc of the db, or the CWD dir if that value isn't set. 
-		String dbName = props.getProperty(DATA_DIR_KEY, ".") + System.getProperty("file.separator") + "pmsp-db";
+		String dbName = props.getProperty(DATA_DIR_KEY) + System.getProperty("file.separator") + "pmsp-db";
 		
 		//specify we want to create the db if it doesn't exists
 		String connectionURL = "jdbc:derby:" + dbName + ";create=true";
