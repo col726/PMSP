@@ -242,5 +242,6 @@ public class MediaServer {
 		//do the bind
 		connection.connect(address);
 		
+		logger.info("Server started");
 	}
 }
