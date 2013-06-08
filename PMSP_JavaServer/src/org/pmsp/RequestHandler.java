@@ -35,14 +35,19 @@ import com.thoughtworks.xstream.io.StreamException;
 /**
  * This is the core of the protocol handler.  Implements one of the Simple framework's interfaces as the underlying 
  * http parsing is handled by the framework. This class controls the flow of the request/response handling and leverages
- * other classes to actually do the work of parsing/checking/building/etc 
+ * other classes to actually do the work of parsing/checking/building/etc
+ * CONCURRENT - The Simple framework will create another instance of this class for each request and run on it's own thread.
+ * Because of that, to achieve concurrency we just have to make sure we did everything as state of an instance, or any 
+ * static/singleton objects were thread safe. 
  */
 public class RequestHandler implements Container {
 
+	//Loggers are thread safe
 	private static final Logger logger = Logger.getLogger(RequestHandler.class);
 	
 	/**
-	 * session map, maps session id to user name.  Represents logged in users
+	 * session map, maps session id to user name.  Represents logged in users.  Use ConcurrentHashMap since
+	 * multiple threads will be hitting this at the same time.
 	 */
 	private static final ConcurrentHashMap<String, String> sessions = new ConcurrentHashMap<String, String>();
 	
@@ -111,6 +116,8 @@ public class RequestHandler implements Container {
 			
 			
 			//STATEFUL this is the call to the DFA enforcement logic, we pass in the current state and the type of request
+			//if it doesn't pass the DFA check then send back an error and log the client off - this will allow
+			// client and server to "reset" back to the initial state should something get messed up
 			if (!dfa.checkTransition(state, op.getType())) {
 				//Use a different http status code specifically for DFA violations
 				response.setCode(PMSP_Constants.DFA_VIOLATION_RETURN_STATUS);

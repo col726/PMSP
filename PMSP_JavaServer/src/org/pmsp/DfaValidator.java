@@ -42,6 +42,8 @@ public class DfaValidator {
 	 * Default constructor.  Loads the in memory representation of the DFA states and transitions
 	 */
 	public DfaValidator() {
+		//For each state in our DFA, create a list of the allowable messages while in that state.
+		//then add them to the hash that represents the entire DFA structure
 		ArrayList<String> transitions = new ArrayList<String>();
 		transitions.add(LoginRequest.class.getCanonicalName());
 		transitions.add(LogoffRequest.class.getCanonicalName());
@@ -72,6 +74,7 @@ public class DfaValidator {
 	 * @return true if it's a valid transition or false if no
 	 */
 	public boolean checkTransition(String fromState, RequestType type) {
+		//if the state is known and the list of allowable messages contains the type specified return true
 		return dfa.get(fromState) != null && dfa.get(fromState).contains(type.getClass().getCanonicalName()); 
 	}
 
