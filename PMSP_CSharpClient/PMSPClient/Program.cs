@@ -41,7 +41,7 @@ namespace PMSPClient
         static void Main(string[] args)
         {
             //Display welcome message.
-            Console.WriteLine("Welcome to the PMSP Audio Player v1.0!");
+            Console.WriteLine("Welcome to the PMSP Audio Player v1.0 by Team 1!");
 
             //Write new line.
             Utilities.WriteNewLine();
@@ -602,6 +602,9 @@ namespace PMSPClient
                                                                 {
                                                                     selectedTrack.Stop();
                                                                 }
+
+                                                                //Delete temp files.
+                                                                CleanUp();
                                                                 break;
 
                                                             //Exit program.
@@ -613,7 +616,23 @@ namespace PMSPClient
                                                                     selectedTrack.Stop();
                                                                 }
 
+                                                                //Delete temp files.
                                                                 CleanUp();
+
+                                                                //Write new line.
+                                                                Utilities.WriteNewLine();
+
+                                                                //Force logout
+                                                                protocol.Logout();
+
+                                                                //Write new line.
+                                                                Utilities.WriteNewLine();
+
+                                                                //Inform user of logout state.
+                                                                Console.WriteLine("You are now logged out of server " + protocol.Server.Url + ".");
+
+                                                                //Write new line.
+                                                                Utilities.WriteNewLine();
                                                                 Environment.Exit(0);
                                                                 break;
                                                         }
