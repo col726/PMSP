@@ -1,4 +1,18 @@
-﻿/*=======================Directives and Pragmas=============================*/
+﻿/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/*=========================Class Description================================
+ * Name : Protocol.
+ * Purpose: This is the protocol class used for interacting with the PMSP Server via PMSP requests & responses.
+ * Version: 1.0
+ *==========================================================================*/
+
+/*=======================Directives and Pragmas=============================*/
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,7 +72,7 @@ namespace PMSPClient
         {
             //Get user name.
             Console.WriteLine("Please enter your User Name: ");
-            _userName = Console.ReadLine();
+            _userName = Console.ReadLine().Trim();
 
             //Get password.
             Console.WriteLine("Please enter your Password: ");
@@ -209,6 +223,10 @@ namespace PMSPClient
                     _server.CreateRequest(_currentClientDfaState, _sessionId);
 
                     //Define operation.
+                    /*******************BEGIN TEST FUZZ**********************/
+                    //Send malformed XML.
+                    //XmlElement operation = _server.RequestData.CreateElement("MalformedXML");
+                    /*******************END TEST FUZZ************************/
                     XmlElement operation = _server.RequestData.CreateElement("Operation");
                     _server.RequestData.AppendChild(operation);
 
@@ -220,34 +238,19 @@ namespace PMSPClient
                     XmlElement criteria = _server.RequestData.CreateElement("criteria");
                     type.AppendChild(criteria);
 
-                    //Get list of tracks or artists.
-                    switch (xmllistType)
-                    {
-                        case ListType.Artist:
+                    //Set attributes.
+                    /*******************BEGIN TEST FUZZ**********************/
+                    //Set invalid xml request.
+                    //type.SetAttribute("class", "InvalidRequest");
+                    /*******************END TEST FUZZ************************/
+                    type.SetAttribute("class", "MetadataListRequest");
+                    type.SetAttribute("category", "Music");
 
-                            /*******************BEGIN TEST FUZZ**********************/
-                            //Set invalid request.
-                            //type.SetAttribute("class", "InvalidRequest");
-                            /*******************END TEST FUZZ************************/
-
-                            //Set attributes.
-                            type.SetAttribute("class", "MetadataListRequest");
-                            type.SetAttribute("category", "Music");
-                            type.SetAttribute("listType", "Artist");
-
-                            //Break.
-                            break;
-
-                        case ListType.Genre:
-
-                            //Set attributes.
-                            type.SetAttribute("class", "MetadataListRequest");
-                            type.SetAttribute("category", "Music");
-                            type.SetAttribute("listType", "Genre");
-
-                            //Break.
-                            break;
-                    }
+                    /*******************BEGIN TEST FUZZ**********************/
+                    //Set invalid list type.
+                    //type.SetAttribute("listType", "Blah");
+                    /*******************END TEST FUZZ************************/
+                    type.SetAttribute("listType", xmllistType.ToString());
 
                     //Get response.
                     HttpWebResponse response = _server.GetResponse(_server.RequestData);
@@ -292,6 +295,9 @@ namespace PMSPClient
                             _exception = exception.Message;
                         }
                     }
+
+                    //Dispose of response.
+                    response.Dispose();
                 }
 
                 //If we have an expired cookie, set error.
@@ -355,6 +361,32 @@ namespace PMSPClient
                     {
                         XmlElement listCriteria = _server.RequestData.CreateElement("ListCriteria");
                         listCriteria.SetAttribute("name", criteriaType.ToString());
+
+                        /*******************BEGIN TEST FUZZ**********************/
+                        //Set invalid criteria for Eric Church.
+                        /*
+                        if (criteriaValue == "Eric Church")
+                        {
+                            listCriteria.SetAttribute("value", "InvalidCriteria");
+                        }
+                        else
+                        {
+                            listCriteria.SetAttribute("value", criteriaValue);
+                        }
+                        */
+
+                        /*
+                        //Set invalid criteria for Folk.
+                        if (criteriaValue == "Folk")
+                        {
+                            listCriteria.SetAttribute("value", "InvalidCriteria");
+                        }
+                        else
+                        {
+                            listCriteria.SetAttribute("value", criteriaValue);
+                        }
+                        */
+                        /*******************END TEST FUZZ************************/
                         listCriteria.SetAttribute("value", criteriaValue);
                         criteria.AppendChild(listCriteria);
                     }
@@ -391,10 +423,18 @@ namespace PMSPClient
                                 //Load xml from response.
                                 _server.Response.LoadXml(new StreamReader(response.GetResponseStream()).ReadToEnd());
                             }
-                            //If not, set error message.
+                            //If not, either set client back to Idle or set error.
                             else
                             {
-                                _exception = "The server was in an unexpected state.";
+                                //If the server is still in the AwaitingListChoice state, no files were returned.  Set client back to AwaitingListChoice.
+                                if (_currentServerDfaState == DfaState.AwaitingListChoice)
+                                {
+                                    _currentClientDfaState = DfaState.AwaitingListChoice;
+                                }
+                                else
+                                {
+                                    _exception = "The server was in an unexpected state.";
+                                }
                             }
                         }
                         catch (Exception exception)
@@ -402,6 +442,9 @@ namespace PMSPClient
                             _exception = exception.Message;
                         }
                     }
+
+                    //Dispose of response.
+                    response.Dispose();
                 }
 
                 //If we have an expired cookie, set error.
@@ -504,6 +547,9 @@ namespace PMSPClient
                             _exception = exception.Message;
                         }
                     }
+
+                    //Dispose of response.
+                    response.Dispose();
                 }
 
                 //If we have an expired cookie, set error.
@@ -568,6 +614,9 @@ namespace PMSPClient
                     {
                         _exception = _server.Exception;
                     }
+
+                    //Dispose of response.
+                    response.Dispose();
                 }
             }
 

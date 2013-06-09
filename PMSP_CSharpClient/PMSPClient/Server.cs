@@ -1,4 +1,19 @@
-﻿/*=======================Directives and Pragmas=============================*/
+﻿/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/*=========================Class Description================================
+ * Name : Server.
+ * Purpose: This class is used for all interactions with the PMSP Server.
+ * Version: 1.0
+ * Installation Instructions:
+ *==========================================================================*/
+
+/*=======================Directives and Pragmas=============================*/
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +33,10 @@ namespace PMSPClient
         //Private fields.
         private string _hostNameOrIpAddress;
         private string _url;
+
+        //SERVICE:  Default port number of 31415
         private const string _port = "31415";
+
         private string _protocolVersion;
         private HttpWebRequest _request;
         private XmlDocument _requestData;
@@ -54,6 +72,9 @@ namespace PMSPClient
             _request = (HttpWebRequest)WebRequest.Create(_url);
 
             //Specify PMSP Version and append to header.
+            /*******************BEGIN TEST FUZZ**********************/
+            //Comment out following line (don't append version).
+            /*******************END TEST FUZZ************************/
             _request.Headers["PMSP-Version"] = _protocolVersion;
 
             //Specify request parameters.
@@ -70,6 +91,10 @@ namespace PMSPClient
 
             //Set session id cookie and add to request.
             Cookie sessionIdCookie = new Cookie(sessionId.Split('=')[0], sessionId.Split('=')[1]);
+
+            /*******************BEGIN TEST FUZZ**********************/
+            //Comment out following line (don't add session cookie).
+            /*******************END TEST FUZZ************************/
             _request.CookieContainer.Add(new Uri(_url), sessionIdCookie);
 
             //New data request.
@@ -98,6 +123,10 @@ namespace PMSPClient
             //Specify credentials
             string credentials = userName + ":" + password;
             credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials));
+
+            /*******************BEGIN TEST FUZZ**********************/
+            //Comment out following line.  No credentials.
+            /*******************END TEST FUZZ************************/
             _request.Headers["Authorization"] = "Basic " + credentials;
         }
 
@@ -141,9 +170,15 @@ namespace PMSPClient
             byte[] data = Encoding.UTF8.GetBytes(postData);
 
             //Get http request stream.
-            using (Stream stream = _request.GetRequestStream())
+            try
             {
+                Stream stream = _request.GetRequestStream();
                 stream.Write(data, 0, data.Length);
+
+            }
+            catch (Exception ex)
+            {
+                _exception = ex.Message;
             }
 
             //Return response

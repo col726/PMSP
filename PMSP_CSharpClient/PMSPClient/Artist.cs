@@ -1,4 +1,18 @@
-﻿/*=======================Directives and Pragmas=============================*/
+﻿/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/*=========================Class Description================================
+ * Name : Artist.
+ * Purpose: This is the Artist class used for audio artists.
+ * Version: 1.0
+ *==========================================================================*/
+
+/*=======================Directives and Pragmas=============================*/
 using System;
 using System.Collections.Generic;
 using System.Linq;

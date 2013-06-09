@@ -1,4 +1,20 @@
-﻿using System;
+﻿/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/*=========================Class Description================================
+ * Name : Genre.
+ * Purpose: This is the Genre class used for audio genres.
+ * Version: 1.0
+ * Installation Instructions:
+ *==========================================================================*/
+
+/*=======================Directives and Pragmas=============================*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

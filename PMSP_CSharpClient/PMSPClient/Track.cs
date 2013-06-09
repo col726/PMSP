@@ -1,4 +1,19 @@
-﻿/*=======================Directives and Pragmas=============================*/
+﻿/*=========================Group/Course Information=========================
+ * Group 1:  Adam Himes, Brian Huber, Colin McKenna, Josh Krupka
+ * CS 544
+ * Spring 2013
+ * Drexel University
+ * Final Project
+ *==========================================================================*/
+
+/*=========================Class Description================================
+ * Name : Track.
+ * Purpose: This is the Track class used for obtaining track lists and streaming audio.
+ * Version: 1.0
+ * Installation Instructions:
+ *==========================================================================*/
+
+/*=======================Directives and Pragmas=============================*/
 using System;
 using System.Collections.Generic;
 using System.Linq;
