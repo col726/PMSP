@@ -53,13 +53,22 @@ public class ResponseBuilder {
 			throws IOException, SQLException {
 		PrintStream body = response.getPrintStream();
 
-		setReponseCookies(response, sessionId, STATE_WAIT_FOR_FILE_CHOICE);
+		
 		
 		MediaFileListing mfl = new MediaFileListing();
 		
 		//create dao object and call the appropriate query method
 		MediaDao dao = new MediaDao();
 		mfl.setMediaFiles(dao.findFiles((FileListRequest)operation.getType()));
+		
+		//if there were no results, the protocol stays in the same state
+		if (mfl.getMediaFiles().isEmpty()) {
+			setReponseCookies(response, sessionId, STATE_WAIT_FOR_LIST_CHOICE);
+		}
+		//otherwise go to wait.file.choice state
+		else {
+			setReponseCookies(response, sessionId, STATE_WAIT_FOR_FILE_CHOICE);
+		}
 		
 		//call xstream object to convert our object to xml, write that in http body
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -81,13 +90,20 @@ public class ResponseBuilder {
 	SQLException {
 		PrintStream body = response.getPrintStream();
 		
-		setReponseCookies(response, sessionId, STATE_WAIT_FOR_LIST_CHOICE);
-		
 		MediaMetadataListing mml = new MediaMetadataListing();
 		
 		//create dao object and call the appropriate query method
 		MediaDao dao = new MediaDao();
 		mml.setMetadata(dao.findMetadata((MetadataListRequest)operation.getType()));
+		
+		//if there were no results, the protocol stays in the same state
+		if (mml.getMetadata().isEmpty()) {
+			setReponseCookies(response, sessionId, STATE_IDLE);
+		}
+		//otherwise go to wait.list.choice state
+		else {
+			setReponseCookies(response, sessionId, STATE_WAIT_FOR_LIST_CHOICE);
+		}
 		
 		//call xstream object to convert our object to xml, write that in http body
 		body.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -109,8 +125,6 @@ public class ResponseBuilder {
 			throws IOException, Exception {
 		PrintStream body = response.getPrintStream();
 		
-		setReponseCookies(response, sessionId, STATE_IDLE);
-		
 		
 		Retrieval r = new Retrieval();
 		RetrievalRequest retrieveRequest = (RetrievalRequest)operation.getType();
@@ -118,6 +132,15 @@ public class ResponseBuilder {
 		//create dao object and call the appropriate query method
 		List<? extends MediaFile> files = new MediaDao().findFiles(retrieveRequest.getPmspIds(), retrieveRequest.getMediaType());
 
+		//if there were no results, the protocol stays in the same state
+		if (files.isEmpty()) {
+			setReponseCookies(response, sessionId, STATE_WAIT_FOR_FILE_CHOICE);
+		}
+		//if there were results, protocol goes back to idle state
+		else {
+			setReponseCookies(response, sessionId, STATE_IDLE);
+		}
+		
 		//iterate over all the files, do base64 encoding and checksumming
 		for (MediaFile f : files) {
 			String s = encodeBase64(f.getFullFilePath());

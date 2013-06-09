@@ -52,11 +52,18 @@ import com.thoughtworks.xstream.XStream;
  */
 public class MediaServer {
 
+	/**
+	 * The default properties that will be used if they are not specified in the config file
+	 */
 	private static final Properties defaultProps = new Properties();
+
+	//set the defaults
 	static {
 		defaultProps.put(PMSP_Constants.SESSION_TIMEOUT_DURATION_KEY, "1200");
 		defaultProps.put(PMSP_Constants.DATA_DIR_KEY, ".");
+		//CLIENT - defines the ip address the server will bind to
 		defaultProps.put(PMSP_Constants.LISTEN_HOST_KEY, "0.0.0.0");
+		//SERVICE - pre-defined port number
 		defaultProps.put(PMSP_Constants.LISTEN_PORT_KEY, "31415");
 		defaultProps.put(PMSP_Constants.LOGGING_CONFIG_KEY, "logger.properties");
 	}
@@ -64,10 +71,12 @@ public class MediaServer {
 	public static Properties props = new Properties(defaultProps);
 	private static final Logger logger = Logger.getLogger(MediaServer.class);
 	private static XStream parser = new XStream();
+	
+	//Classes of the simple framework
 	protected static Server server;
 	protected static Connection connection; 
 	
-	// Xstream docs recommend xml configuration is done once and done ahead of time
+	// Xstream docs recommend xml configuration is done once and done before starting to use it.
 	// this processes all the annotations so xstream knows how to load/build our xml docs
 	static {
 		@SuppressWarnings("rawtypes")
@@ -135,7 +144,7 @@ public class MediaServer {
 	 */
 	public static java.sql.Connection getDbConnection() throws SQLException {
 		//use the DAT_DIR setting as the loc of the db, or the CWD dir if that value isn't set. 
-		String dbName = props.getProperty(DATA_DIR_KEY, ".") + System.getProperty("file.separator") + "pmsp-db";
+		String dbName = props.getProperty(DATA_DIR_KEY) + System.getProperty("file.separator") + "pmsp-db";
 		
 		//specify we want to create the db if it doesn't exists
 		String connectionURL = "jdbc:derby:" + dbName + ";create=true";
@@ -235,12 +244,16 @@ public class MediaServer {
 		connection = new SocketConnection(server);
 		
 		//default to the wildcard ip and port 31415 but both can be overridden in the config file
+		//CLIENT - the host the client will need to connect to depends on the setting of this value
 		String host = props.getProperty(LISTEN_HOST_KEY);
+
+		//SERVICE - the port the client will need to connect to depends on this value
 		int port = Integer.parseInt(props.getProperty(LISTEN_PORT_KEY));
 		SocketAddress address = new InetSocketAddress(host, port);
 
 		//do the bind
 		connection.connect(address);
 		
+		logger.info("Server started");
 	}
 }

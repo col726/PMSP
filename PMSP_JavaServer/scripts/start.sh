@@ -1,11 +1,13 @@
 #!/bin/sh
 
-#Need to change this if you want to be able to run the script from anywhere other than the bin dir!
+#Need to change this if you want to be able to run the script from anywhere other than the scripts dir!
 PMSP_DIR=..
 
 cd $PMSP_DIR
 
-nohup java -Xmx1024m -classpath "./lib/*" -Dpmsp.server=true  org.pmsp.MediaServer </dev/null >server.out 2>&1 &
+# Run the app
+# Added pmsp.server flag to give us something unique to look for in our grep/kill shutdown process
+nohup java -Xmx1024m -classpath "./dist/*:./lib/*" -Dpmsp.server=true  org.pmsp.MediaServer </dev/null >server.out 2>&1 &
 
 sleep 1
 

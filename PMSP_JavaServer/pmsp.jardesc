@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="PMSP/PMSP_JavaServer/pmsp.jar"/>
+    <jar path="PMSP/PMSP_JavaServer/lib/pmsp.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/PMSP_JavaServer/pmsp.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
-    <manifest generateManifest="true" mainClassHandleIdentifier="=PMSP_JavaServer/src&lt;org.pmsp{MediaServer.java[MediaServer" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+    <manifest generateManifest="true" mainClassHandleIdentifier="=PMSP_JavaServer/src&lt;org.pmsp{MediaServer.java[MediaServer" manifestLocation="/PMSP_JavaServer/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
         <sealing sealJar="false">
             <packagesToSeal/>
             <packagesToUnSeal/>
@@ -14,7 +14,6 @@
         <file path="/PMSP_JavaServer/pmsp.jardesc"/>
         <file path="/PMSP_JavaServer/.project"/>
         <folder path="/PMSP_JavaServer/lib"/>
-        <file path="/PMSP_JavaServer/DUMMYFILE.txt"/>
         <javaElement handleIdentifier="=PMSP_JavaServer/src"/>
         <file path="/PMSP_JavaServer/.classpath"/>
     </selectedElements>
